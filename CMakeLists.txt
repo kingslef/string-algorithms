@@ -12,4 +12,4 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual")
 
-add_executable(test_main tests/test_main.c src/trivial.c)
+add_executable(test_main tests/test_main.c src/trivial.c src/kmp.c)

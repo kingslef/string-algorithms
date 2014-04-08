@@ -1,7 +1,9 @@
 #include <trivial.h>
+#include <kmp.h>
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include "min_unit.h"
 
@@ -31,10 +33,46 @@ static const char *test_trivial_positive(void)
     return NULL;
 }
 
+static const char *kmp_border_test(const char *test_string, uint32_t string_len,
+                                   const int32_t correct_border[])
+{
+    int32_t border[string_len + 1];
+
+    mu_assert_equal("border creation failed",
+                    kmp_build_border(test_string, border), 0);
+
+    mu_assert_equal_array("wrong border array created",
+                          border,
+                          correct_border,
+                          string_len);
+
+    return NULL;
+}
+
+
 static const char *all_tests(void)
 {
-    mu_run_test(test_trivial_negative);
-    mu_run_test(test_trivial_positive);
+    /* Trivial algorithm tests */
+    mu_run_test(test_trivial_negative());
+    mu_run_test(test_trivial_positive());
+
+    /* KMP border array tests */
+    mu_run_test(kmp_border_test("ABCDABD", strlen("ABCDABD"),
+                                (const int32_t []){0, 0, 0, 0, 1, 2, 0}));
+    mu_run_test(kmp_border_test("ALABARALAALABARDA",
+                                strlen("ALABARALAALABARDA"),
+                                (const int32_t []){0, 0, 1, 0, 1, 0, 1, 2, 3, 1,
+                                        2, 3, 4, 5, 6, 0, 1}));
+    mu_run_test(kmp_border_test("TIPETIPETAP", strlen("TIPETIPETAP"),
+                                (const int32_t []){0, 0, 0, 0, 1, 2, 3, 4, 5, 0,
+                                        0}));
+    mu_run_test(kmp_border_test("ONEONETWO", strlen("ONEONETWO"),
+                                (const int32_t []){0, 0, 0, 1, 2, 3, 0, 0, 1}));
+    mu_run_test(kmp_border_test("PARTICIPATE IN PARACHUTE",
+                                strlen("PARTICIPATE IN PARACHUTE"),
+                                (const int32_t []){0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
+                                        0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0,
+                                        0}));
 
     return NULL;
 }
@@ -54,4 +92,3 @@ int main(void)
     printf("All tests passed\n");
     return 0;
 }
-
