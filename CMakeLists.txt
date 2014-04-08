@@ -10,6 +10,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wnested-externs -Wbad-function-cast")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow -Wwrite-strings -Wconversion")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -g")
 
 add_executable(test_main tests/test_main.c src/trivial.c src/kmp.c)
