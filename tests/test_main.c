@@ -9,25 +9,25 @@
 
 static int tests_run;
 
-static const char *test_trivial_negative(void)
+static const char *test_match_negative(int (*match_func)(const char*, const char*))
 {
-    mu_assert_equal("unexisting pattern was found", trivial_match("foo", "bar"), -1);
-    mu_assert_equal("unexisting pattern was found", trivial_match("fo", "foo"), -1);
-    mu_assert_equal("unexisting pattern was found", trivial_match("fo", NULL), -1);
-    mu_assert_equal("unexisting pattern was found", trivial_match(NULL, NULL), -1);
-    mu_assert_equal("unexisting pattern was found", trivial_match(NULL, "foo"), -1);
-    mu_assert_equal("unexisting pattern was found", trivial_match(NULL, "foo"), -1);
+    mu_assert_equal("unexisting pattern was found", match_func("foo", "bar"), -1);
+    mu_assert_equal("unexisting pattern was found", match_func("fo", "foo"), -1);
+    mu_assert_equal("unexisting pattern was found", match_func("fo", NULL), -1);
+    mu_assert_equal("unexisting pattern was found", match_func(NULL, NULL), -1);
+    mu_assert_equal("unexisting pattern was found", match_func(NULL, "foo"), -1);
+    mu_assert_equal("unexisting pattern was found", match_func(NULL, "foo"), -1);
 
     return NULL;
 }
 
-static const char *test_trivial_positive(void)
+static const char *test_match_positive(int (*match_func)(const char*, const char*))
 {
-    mu_assert_equal("pattern was not found", trivial_match("foo", "foo"), 0);
-    mu_assert_equal("pattern was not found", trivial_match("barfoo", "foo"),
+    mu_assert_equal("pattern was not found", match_func("foo", "foo"), 0);
+    mu_assert_equal("pattern was not found", match_func("barfoo", "foo"),
                     strlen("bar"));
     mu_assert_equal("pattern was not found",
-                    trivial_match("barfoo rfoobarr foobar", "foobar"),
+                    match_func("barfoo rfoobarr foobar", "foobar"),
                     strlen("barfoo r"));
 
     return NULL;
@@ -53,8 +53,8 @@ static const char *kmp_border_test(const char *test_string, uint32_t string_len,
 static const char *all_tests(void)
 {
     /* Trivial algorithm tests */
-    mu_run_test(test_trivial_negative());
-    mu_run_test(test_trivial_positive());
+    mu_run_test(test_match_negative(trivial_match));
+    mu_run_test(test_match_positive(trivial_match));
 
     /* KMP border array tests */
     mu_run_test(kmp_border_test("ABCDABD", strlen("ABCDABD"),
@@ -73,6 +73,10 @@ static const char *all_tests(void)
                                 (const int32_t []){0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
                                         0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0,
                                         0}));
+
+    /* KMP algorithm tests */
+    mu_run_test(test_match_negative(kmp_match));
+    mu_run_test(test_match_positive(kmp_match));
 
     return NULL;
 }
