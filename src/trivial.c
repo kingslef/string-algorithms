@@ -14,6 +14,7 @@ int trivial_match(const char *text, const char *pattern)
         return -1;
     }
 
+    /* TODO: remove strlen and replace with '\0' checks */
     const size_t text_len = strlen(text);
     const size_t pattern_len = strlen(pattern);
 
@@ -29,7 +30,8 @@ int trivial_match(const char *text, const char *pattern)
             }
         }
         if (p == pattern_len) {
-            return t;
+            /* TODO: fix cast */
+            return (int)t;
         }
     }
 
