@@ -1,12 +1,13 @@
 #include "kmp.h"
 
 #include <string.h>
+#include <stdint.h>
 
-int kmp_build_border(const char *pattern, int32_t *border)
+int kmp_build_border(const char *pattern, int *border)
 {
     /* TODO: remove strlen */
     size_t len = strlen(pattern);
-    int32_t candidate = 0;
+    int candidate = 0;
 
     if (len > 0) {
         border[0] = 0;
@@ -35,7 +36,7 @@ int kmp_match(const char *text, const char *pattern)
         return -1;
     }
 
-    int32_t border[strlen(pattern) + 1];
+    int border[strlen(pattern) + 1];
 
     kmp_build_border(pattern, &(border[1]));
 
