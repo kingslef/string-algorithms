@@ -10,7 +10,22 @@
 
 #define ALPHABET_LEN CHAR_MAX
 
-int bm_build_good_suffix(const char *pattern, int *good_suffix);
+int bm_build_good_suffix(const char *pattern, int *good_suffix)
+{
+    if (pattern == NULL) {
+        return -1;
+    }
+
+    /* TODO: remove strlen */
+    const uint32_t pattern_len = (uint32_t)strlen(pattern);
+
+    for (uint32_t i = 0; i < pattern_len; i++) {
+        
+    }
+
+
+    return 0;
+}
 
 /* Graham A. Stephen: String Searching Algorithms */
 int bm_build_bad_char(const char *pattern, uint32_t *bad_char)

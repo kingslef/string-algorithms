@@ -133,6 +133,7 @@ static const char *all_tests(void)
     mu_run_test(bm_bad_char_test("WOOHOO", "WOH", (const uint32_t []){5, 0, 2}));
     mu_run_test(bm_bad_char_test("LALLILLA", "AIL", (const uint32_t []){0, 3, 1}));
     mu_run_test(bm_bad_char_test("ABCDB", "ABCD", (const uint32_t []){4, 0, 2, 1}));
+
     return NULL;
 }
 
