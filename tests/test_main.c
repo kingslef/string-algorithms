@@ -1,9 +1,11 @@
 #include <trivial.h>
 #include <kmp.h>
+#include <bm.h>
 
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <limits.h>
 
 #include "min_unit.h"
 
@@ -70,6 +72,34 @@ static const char *kmp_border_test(const char *test_string, uint32_t string_len,
     return NULL;
 }
 
+static const char *bm_bad_char_test(const char *pattern, const char *indexes,
+                                    const uint32_t *values)
+{
+    uint32_t bad_char[CHAR_MAX];
+    uint32_t bad_char_correct[CHAR_MAX];
+
+    const uint32_t pattern_len = (uint32_t)strlen(pattern);
+
+    for (uint32_t i = 0; i < CHAR_MAX; i++) {
+        bad_char_correct[i] = pattern_len;
+    }
+
+    while (*indexes != '\0') {
+        bad_char_correct[(int)*indexes] = *values;
+        indexes++;
+        values++;
+    }
+
+    mu_assert_equal("bad char array creation failed",
+                    bm_build_bad_char(pattern, bad_char), 0);
+
+    mu_assert_equal_array("wrong bad char rule array created",
+                          bad_char,
+                          bad_char_correct,
+                          CHAR_MAX);
+
+    return NULL;
+}
 
 static const char *all_tests(void)
 {
@@ -99,6 +129,10 @@ static const char *all_tests(void)
     mu_run_test(test_match_negative(kmp_match));
     mu_run_test(test_match_positive(kmp_match));
 
+    /* BM bad character rule tests */
+    mu_run_test(bm_bad_char_test("WOOHOO", "WOH", (const uint32_t []){5, 0, 2}));
+    mu_run_test(bm_bad_char_test("LALLILLA", "AIL", (const uint32_t []){0, 3, 1}));
+    mu_run_test(bm_bad_char_test("ABCDB", "ABCD", (const uint32_t []){4, 0, 2, 1}));
     return NULL;
 }
 

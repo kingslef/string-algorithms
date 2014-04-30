@@ -26,6 +26,11 @@
                 for (i = 0; i < (size); i++)                            \
                     printf("%d ", (got)[i]);                            \
                 putchar('\n');                                          \
+                printf("%s:%d: %s: expected: ",                         \
+                       __FILE__, __LINE__, __func__);                   \
+                for (i = 0; i < (size); i++)                            \
+                    printf("%d ", (expected)[i]);                       \
+                putchar('\n');                                          \
                 return (message);                                       \
             }                                                           \
         }                                                               \
