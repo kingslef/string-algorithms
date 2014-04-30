@@ -16,7 +16,7 @@ static int find_needle(const char *haystack, const char *needle)
         return -1;
     }
 
-    return f - haystack;
+    return (int)(f - haystack);
 }
 
 static const char *test_match_negative(int (*match_func)(const char*, const char*))
