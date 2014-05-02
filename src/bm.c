@@ -10,6 +10,8 @@
 
 #define ALPHABET_LEN CHAR_MAX
 
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+
 int bm_build_good_suffix(const char *pattern, int *good_suffix)
 {
     if (pattern == NULL) {
@@ -20,9 +22,8 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix)
     const uint32_t pattern_len = (uint32_t)strlen(pattern);
 
     for (uint32_t i = 0; i < pattern_len; i++) {
-        
-    }
 
+    }
 
     return 0;
 }
@@ -55,4 +56,37 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char)
 
 /* Suitable if pattern is large
    [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf] */
-int bm_match(const char *text, const char *pattern);
+int bm_match(const char *text, const char *pattern)
+{
+    if (text == NULL || pattern == NULL) {
+        return -1;
+    }
+
+    /* TODO: remove strlen */
+    const size_t pattern_len = strlen(pattern);
+    const size_t text_len = strlen(text);
+
+    uint32_t bad_char[ALPHABET_LEN] = {0};
+    bm_build_bad_char(pattern, bad_char);
+
+    /* TODO: add good suffix */
+    uint32_t good_suffix[ALPHABET_LEN] = {0};
+
+    size_t i = pattern_len - 1;
+    size_t j = pattern_len - 1;
+    while (i < text_len) {
+        while (text[i] == pattern[j]) {
+            i--;
+            j--;
+            if (j == 0 && text[i] == pattern[j]) {
+                /* Match */
+                /* TODO: handle cast */
+                return (int)i;
+            }
+        }
+        i += MAX(bad_char[(int)text[i]], good_suffix[j]);
+        j = pattern_len - 1;
+    }
+
+    return -1;
+}
