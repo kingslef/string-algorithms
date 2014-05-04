@@ -56,10 +56,13 @@ static const char *test_match_positive(int (*match_func)(const char*, const char
     return NULL;
 }
 
-static const char *kmp_border_test(const char *test_string, uint32_t string_len,
+static const char *kmp_border_test(const char *test_string,
                                    const int32_t correct_border[])
 {
-    int32_t border[string_len + 1];
+    const uint32_t string_len = strlen(test_string);
+    int border[string_len + 1];
+
+    memset(border, 0, sizeof(border));
 
     mu_assert_equal("border creation failed",
                     kmp_build_border(test_string, border), 0);
@@ -108,19 +111,17 @@ static const char *all_tests(void)
     mu_run_test(test_match_positive(trivial_match));
 
     /* KMP border array tests */
-    mu_run_test(kmp_border_test("ABCDABD", strlen("ABCDABD"),
+    mu_run_test(kmp_border_test("ABCDABD",
                                 (const int32_t []){0, 0, 0, 0, 1, 2, 0}));
     mu_run_test(kmp_border_test("ALABARALAALABARDA",
-                                strlen("ALABARALAALABARDA"),
                                 (const int32_t []){0, 0, 1, 0, 1, 0, 1, 2, 3, 1,
                                         2, 3, 4, 5, 6, 0, 1}));
-    mu_run_test(kmp_border_test("TIPETIPETAP", strlen("TIPETIPETAP"),
+    mu_run_test(kmp_border_test("TIPETIPETAP",
                                 (const int32_t []){0, 0, 0, 0, 1, 2, 3, 4, 5, 0,
                                         0}));
-    mu_run_test(kmp_border_test("ONEONETWO", strlen("ONEONETWO"),
+    mu_run_test(kmp_border_test("ONEONETWO",
                                 (const int32_t []){0, 0, 0, 1, 2, 3, 0, 0, 1}));
     mu_run_test(kmp_border_test("PARTICIPATE IN PARACHUTE",
-                                strlen("PARTICIPATE IN PARACHUTE"),
                                 (const int32_t []){0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
                                         0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0,
                                         0}));
