@@ -42,14 +42,116 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix)
     /* TODO: remove strlen */
     const uint32_t pattern_len = (uint32_t)strlen(pattern);
 
+    DEBUG("%s: building suffix for %s\n", __func__, pattern);
+
+    good_suffix[pattern_len] = 1;
+
+    /* Two cases: suffix occurs somewhere else in the pattern */
+    for (uint32_t i = pattern_len - 2; ; i--) {
+        const char *suffix_to_search = pattern + i + 1;
+
+        DEBUG("%s: -- mismatch at %c (suffix %s)\n", __func__, pattern[i], suffix_to_search);
+
+        uint32_t j = 0;
+        const char *suffix;
+
+        do {
+            DEBUG("%s: searching from %s[0, %u)\n",
+                  __func__, pattern, i - j);
+
+            suffix = strrnstr(pattern, suffix_to_search, pattern_len - j);
+            if (suffix) {
+                DEBUG("%s: suffix %s found in %s[0, %u) at %u (from %s) -- %s\n",
+                      __func__, suffix_to_search, pattern, i - j, suffix - pattern, suffix,
+                      (suffix[-1] == pattern[i]) ? "but mismatch occurs" : "fine");
+                if (suffix[-1] == pattern[i]) {
+                    suffix = NULL;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+            j++;
+            if (j >= i) {
+                suffix == NULL;
+                break;
+            }
+        } while (1);
+
+        if (suffix) {
+            good_suffix[i + 1] = (int)(suffix_to_search - suffix);
+            DEBUG("%s: shifting %u by %u\n",
+                  __func__, i + 1, good_suffix[i + 1]);
+        } else {
+            good_suffix[i + 1] = 0;
+        }
+
+        if (i == 0) {
+            good_suffix[i] = 0;
+            break;
+        }
+    }
+
+    DEBUG("%s: --- first part done\n",
+          __func__);
+
+    for (uint32_t i = 0; i < pattern_len + 1; i++) {
+        DEBUG("%u ", i);
+    }
+    DEBUG(":\n");
+
+    for (uint32_t i = 0; i < pattern_len + 1; i++) {
+        DEBUG("%u ", good_suffix[i]);
+    }
+    DEBUG("\n");
+
+
+    /* ... or part of the suffix occurs at the beginning */
     for (uint32_t i = 0; i < pattern_len; i++) {
+        uint32_t j = 0;
+
+        int ret = 0;
+        while (j != pattern_len) {
+            if (j == 0 && i == 0) {
+                j++;
+            }
+
+            ret = strncmp(pattern, pattern + i + j, pattern_len - i - j);
+            if (ret == 0) {
+                DEBUG("%s: suffix %s found\n", __func__, pattern + i + j);
+                if (good_suffix[i] == 0) {
+                    good_suffix[i] = i + j;
+                    DEBUG("%s: shifting %u by %u\n",
+                          __func__, i, good_suffix[i]);
+                }
+                break;
+            } else {
+                DEBUG("%s: suffix %s not found\n", __func__, pattern + i + j);
+            }
+            j++;
+        }
+
+        if (ret) {
+            DEBUG("%s: no suffix found\n", __func__);
+            if (good_suffix[i] == 0) {
+                good_suffix[i] = pattern_len;
+                DEBUG("%s: shifting %u by %u\n",
+                      __func__, i, good_suffix[i]);
+            }
+        }
 
     }
+
+    for (uint32_t i = 0; i < pattern_len + 1; i++) {
+        DEBUG("%u ", good_suffix[i]);
+    }
+    DEBUG("\n");
 
     return 0;
 }
 
-/* Graham A. Stephen: String Searching Algorithms */
+/* Pseudocode from Graham A. Stephen: String Searching Algorithms */
 int bm_build_bad_char(const char *pattern, uint32_t *bad_char)
 {
     if (pattern == NULL) {
@@ -66,17 +168,19 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char)
 
     /* Set values in pattern */
     for (uint32_t i = 0; i < pattern_len; i++) {
-        printf("%s: %u\n", __func__, i);
         bad_char[(int)pattern[i]] = pattern_len - i - 1;
-        DEBUG("%s: set badchar[%c] to %u (i %u)\n", __func__, pattern[i],
-              bad_char[(int)pattern[i]], i);
+        /* DEBUG("%s: set badchar[%c] to %u (i %u)\n", __func__, pattern[i], */
+        /*       bad_char[(int)pattern[i]], i); */
     }
 
     return 0;
 }
 
 /* Suitable if pattern is large
-   [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf] */
+   [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf]
+
+   Pseudocode from T-106.5400 Course notes 2012.
+*/
 int bm_match(const char *text, const char *pattern)
 {
     if (text == NULL || pattern == NULL) {
@@ -106,6 +210,9 @@ int bm_match(const char *text, const char *pattern)
                 return (int)i;
             }
         }
+        DEBUG("%s: increasing by %u (bad_char %u, good_suffix %u)\n",
+              __func__, MAX(bad_char[(int)text[i]], good_suffix[j]),
+              bad_char[(int)text[i]], good_suffix[j]);
         i += MAX(bad_char[(int)text[i]], good_suffix[j]);
         j = pattern_len - 1;
     }
