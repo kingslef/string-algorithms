@@ -75,6 +75,26 @@ static const char *kmp_border_test(const char *test_string,
     return NULL;
 }
 
+static const char *bm_good_suffix_test(const char *test_string,
+                                       const int32_t correct_good_suffix[])
+{
+    const size_t string_len = strlen(test_string);
+    int good_suffix[string_len + 1];
+
+    memset(good_suffix, 0, sizeof(good_suffix));
+
+    mu_assert_equal("good suffix creation failed",
+                    bm_build_good_suffix(test_string, good_suffix), 0);
+
+    mu_assert_equal_array("wrong good suffix array created",
+                          good_suffix,
+                          correct_good_suffix,
+                          string_len);
+
+    return NULL;
+}
+
+
 static const char *bm_bad_char_test(const char *pattern, const char *indexes,
                                     const uint32_t *values)
 {
@@ -171,6 +191,11 @@ static const char *all_tests(void)
     mu_run_test(bm_bad_char_test("WOOHOO", "WOH", (const uint32_t []){5, 0, 2}));
     mu_run_test(bm_bad_char_test("LALLILLA", "AIL", (const uint32_t []){0, 3, 1}));
     mu_run_test(bm_bad_char_test("ABCDB", "ABCD", (const uint32_t []){4, 0, 2, 1}));
+
+    /* BM good suffix rule tests */
+    mu_run_test(bm_good_suffix_test("LALLILLA",
+                                    (const int32_t []){6, 6, 6, 6, 6, 6, 6, 8, 1}));
+
 
     /* BM algorithm tests */
     mu_run_test(test_match_negative(bm_match));

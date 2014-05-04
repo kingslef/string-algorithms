@@ -91,7 +91,8 @@ int bm_match(const char *text, const char *pattern)
     bm_build_bad_char(pattern, bad_char);
 
     /* TODO: add good suffix */
-    uint32_t good_suffix[ALPHABET_LEN] = {0};
+    int good_suffix[pattern_len + 1];
+    bm_build_good_suffix(pattern, good_suffix);
 
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
