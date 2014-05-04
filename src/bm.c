@@ -12,6 +12,27 @@
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
+
+/* Finds last occurance of needle in haystack */
+char *strrnstr(const char *haystack, const char *needle, const size_t haystack_len)
+{
+    const size_t needle_len = strlen(needle);
+
+    if (needle_len > haystack_len) {
+        return NULL;
+    }
+
+    for (const char *str = haystack + haystack_len - needle_len;
+         str >= haystack; str--) {
+        int ret = strncmp(str, needle, needle_len);
+        if (ret == 0) {
+            return (char *)str;
+        }
+    }
+
+    return NULL;
+}
+
 int bm_build_good_suffix(const char *pattern, int *good_suffix)
 {
     if (pattern == NULL) {

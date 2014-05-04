@@ -59,7 +59,7 @@ static const char *test_match_positive(int (*match_func)(const char*, const char
 static const char *kmp_border_test(const char *test_string,
                                    const int32_t correct_border[])
 {
-    const uint32_t string_len = strlen(test_string);
+    const size_t string_len = strlen(test_string);
     int border[string_len + 1];
 
     memset(border, 0, sizeof(border));
@@ -104,11 +104,48 @@ static const char *bm_bad_char_test(const char *pattern, const char *indexes,
     return NULL;
 }
 
+static const char *test_strrnstr(void)
+{
+    const char* haystack;
+    const char* needle;
+
+    haystack = "foo";
+    needle = "foo";
+    mu_assert_equal_ptr("strrnstr failed",
+                        strrnstr(haystack, needle, strlen(haystack)), haystack);
+
+    haystack = "fofofo";
+    needle = "fo";
+    mu_assert_equal_ptr("strrnstr failed",
+                        strrnstr(haystack, needle, strlen(haystack)), haystack + strlen(haystack) - strlen(needle));
+
+    haystack = "fofob";
+    needle = "fo";
+    mu_assert_equal_ptr("strrnstr failed",
+                        strrnstr(haystack, needle, strlen(haystack)), haystack + strlen(haystack) - strlen(needle) - 1);
+
+    haystack = "fo";
+    needle = "foo";
+    mu_assert_equal_ptr("strrnstr succeeded",
+                        strrnstr(haystack, needle, strlen(haystack)), NULL);
+
+    haystack = "foo";
+    needle = "b";
+    mu_assert_equal_ptr("strrnstr succeeded",
+                        strrnstr(haystack, needle, strlen(haystack)), NULL);
+
+    return NULL;
+}
+
+
 static const char *all_tests(void)
 {
     /* Trivial algorithm tests */
     mu_run_test(test_match_negative(trivial_match));
     mu_run_test(test_match_positive(trivial_match));
+
+    /* strrnstr tests */
+    mu_run_test(test_strrnstr());
 
     /* KMP border array tests */
     mu_run_test(kmp_border_test("ABCDABD",

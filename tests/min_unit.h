@@ -14,6 +14,17 @@
         }                                                       \
     } while (0)
 
+#define mu_assert_equal_ptr(message, test, i)                   \
+    do {                                                        \
+        const void *got = (test);                               \
+        const void *expected = (i);                             \
+        if (got != expected) {                                  \
+            printf("%s:%d: %s: expected %p, got %p!\n",         \
+                   __FILE__, __LINE__,__func__, expected, got); \
+            return message;                                     \
+        }                                                       \
+    } while (0)
+
 #define mu_assert_equal_array(message, got, expected, size)             \
     do {                                                                \
         for (size_t i = 0; i < (size); i++) {                           \
