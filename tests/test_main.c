@@ -53,6 +53,15 @@ static const char *test_match_positive(int (*match_func)(const char*, const char
     pattern = "foobar";
     mu_assert_equal("pattern was not found", match_func(text, pattern), find_needle(text, pattern));
 
+    text = "HOOWOOWOOHOOWOOWOO";
+    pattern = "WOOHOO";
+    mu_assert_equal("pattern was not found", match_func(text, pattern), find_needle(text, pattern));
+
+    text = "SALLILAILLATAVANLALLILLALLALALLI";
+    pattern = "LALLILLA";
+    mu_assert_equal("pattern was not found", match_func(text, pattern), find_needle(text, pattern));
+
+
     return NULL;
 }
 
