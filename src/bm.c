@@ -200,7 +200,12 @@ int bm_match(const char *text, const char *pattern)
 
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
+
     while (i < text_len) {
+
+        DEBUG("%s: checking from %zu\n",
+              __func__, i);
+
         while (text[i] == pattern[j]) {
             i--;
             j--;
@@ -210,10 +215,15 @@ int bm_match(const char *text, const char *pattern)
                 return (int)i;
             }
         }
+
+        DEBUG("%s: mismatch with text[%zu] and pattern[%zu]\n",
+              __func__, i, j);
+
+
         DEBUG("%s: increasing by %u (bad_char %u, good_suffix %u)\n",
-              __func__, MAX(bad_char[(int)text[i]], good_suffix[j]),
-              bad_char[(int)text[i]], good_suffix[j]);
-        i += MAX(bad_char[(int)text[i]], good_suffix[j]);
+              __func__, MAX(bad_char[(int)text[i]], good_suffix[j+1]),
+              bad_char[(int)text[i]], good_suffix[j+1]);
+        i += MAX(bad_char[(int)text[i]], good_suffix[j+1]);
         j = pattern_len - 1;
     }
 
