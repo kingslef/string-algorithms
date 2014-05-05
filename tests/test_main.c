@@ -1,6 +1,7 @@
 #include <trivial.h>
 #include <kmp.h>
 #include <bm.h>
+#include <rk.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -220,6 +221,10 @@ static const char *all_tests(void)
     /* BM algorithm tests */
     mu_run_test(test_match_negative(bm_match));
     mu_run_test(test_match_positive(bm_match));
+
+    /* RK algorithm tests */
+    mu_run_test(test_match_negative(rk_match));
+    mu_run_test(test_match_positive(rk_match));
 
     return NULL;
 }
