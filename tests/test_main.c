@@ -146,12 +146,14 @@ static const char *test_strrnstr(void)
     haystack = "fofofo";
     needle = "fo";
     mu_assert_equal_ptr("strrnstr failed",
-                        strrnstr(haystack, needle, strlen(haystack)), haystack + strlen(haystack) - strlen(needle));
+                        strrnstr(haystack, needle, strlen(haystack)),
+                        haystack + strlen(haystack) - strlen(needle));
 
     haystack = "fofob";
     needle = "fo";
     mu_assert_equal_ptr("strrnstr failed",
-                        strrnstr(haystack, needle, strlen(haystack)), haystack + strlen(haystack) - strlen(needle) - 1);
+                        strrnstr(haystack, needle, strlen(haystack)),
+                        haystack + strlen(haystack) - strlen(needle) - 1);
 
     haystack = "fo";
     needle = "foo";
