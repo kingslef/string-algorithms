@@ -47,12 +47,10 @@ int kmp_match(const char *text, const char *pattern)
 
     border[0] = -1;
 
-    const size_t text_len = strlen(text);
-
     uint32_t i = 0;
     uint32_t match = 0;
 
-    while (match + i < text_len) {
+    while (text[match + i] != '\0') {
         if (pattern[i] == text[match + i]) {
             i++;
             if (i == pattern_len) {
