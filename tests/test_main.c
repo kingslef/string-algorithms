@@ -75,7 +75,7 @@ static const char *kmp_border_test(const char *test_string,
     memset(border, 0, sizeof(border));
 
     mu_assert_equal("border creation failed",
-                    kmp_build_border(test_string, border), 0);
+                    kmp_build_border(test_string, border, string_len), 0);
 
     mu_assert_equal_array("wrong border array created",
                           border,

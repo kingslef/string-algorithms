@@ -3,17 +3,20 @@
 #include <string.h>
 #include <stdint.h>
 
-int kmp_build_border(const char *pattern, int *border)
+int kmp_build_border(const char *pattern, int *border,
+                     const size_t pattern_len)
 {
-    /* TODO: remove strlen */
-    size_t len = strlen(pattern);
-    int candidate = 0;
+    if (border == NULL || pattern == NULL) {
+        return -1;
+    }
 
-    if (len > 0) {
+    if (pattern_len > 0) {
         border[0] = 0;
     }
 
-    for (size_t i = 1; i < len;) {
+    int candidate = 0;
+
+    for (size_t i = 1; i < pattern_len;) {
         if (pattern[i] == pattern[candidate]) {
             candidate++;
         } else if (candidate > 0) {
@@ -36,14 +39,15 @@ int kmp_match(const char *text, const char *pattern)
         return -1;
     }
 
-    int border[strlen(pattern) + 1];
+    const size_t pattern_len = strlen(pattern);
 
-    kmp_build_border(pattern, &(border[1]));
+    int border[pattern_len + 1];
+
+    kmp_build_border(pattern, &(border[1]), pattern_len);
 
     border[0] = -1;
 
     const size_t text_len = strlen(text);
-    const size_t pattern_len = strlen(pattern);
 
     uint32_t i = 0;
     uint32_t match = 0;
