@@ -176,7 +176,7 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
 
    Pseudocode from T-106.5400 Course notes 2012.
 */
-int bm_match(const char *text, const char *pattern)
+int bm_match(const char *text, const char *pattern, const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
         return -1;
@@ -194,7 +194,7 @@ int bm_match(const char *text, const char *pattern)
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
 
-    while (text[i] != '\0') {
+    while (i < text_len) {
 
         DEBUG("%s: checking from %zu\n",
               __func__, i);

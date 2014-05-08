@@ -33,7 +33,8 @@ int kmp_build_border(const char *pattern, int *border,
     return 0;
 }
 
-int kmp_match(const char *text, const char *pattern)
+int kmp_match(const char *text, const char *pattern,
+              const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
         return -1;
@@ -50,7 +51,7 @@ int kmp_match(const char *text, const char *pattern)
     uint32_t i = 0;
     uint32_t match = 0;
 
-    while (text[match + i] != '\0') {
+    while (match + i < text_len) {
         if (pattern[i] == text[match + i]) {
             i++;
             if (i == pattern_len) {

@@ -8,16 +8,13 @@
 #define DEBUG printf
 
 /* Based on pseudocode in T-106.5400 Course notes 2012. */
-int rk_match(const char *text, const char *pattern)
+int rk_match(const char *text, const char *pattern, const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
         return -1;
     }
 
     uint32_t pattern_len = strlen(pattern);
-
-    /* TODO: remove strlen */
-    uint32_t text_len = strlen(text);
 
     /* TODO: remove len checks */
     if (pattern_len > text_len || pattern_len == 0 || text_len == 0) {
