@@ -10,26 +10,18 @@
  */
 int trivial_match(const char *text, const char *pattern)
 {
-    if (!text || !pattern) {
+    if (text == NULL || pattern == NULL) {
         return -1;
     }
 
-    /* TODO: remove strlen and replace with '\0' checks */
-    const size_t text_len = strlen(text);
-    const size_t pattern_len = strlen(pattern);
-
-    if (text_len < pattern_len) {
-        return -1;
-    }
-
-    for (size_t t = 0; t <= text_len - pattern_len; t++) {
+    for (size_t t = 0; text[t] != '\0'; t++) {
         size_t p;
-        for (p = 0; p < pattern_len; p++) {
-            if (pattern[p] != text[t + p]) {
+        for (p = 0; pattern[p] != '\0'; p++) {
+            if (text[t + p] == '\0' || pattern[p] != text[t + p]) {
                 break;
             }
         }
-        if (p == pattern_len) {
+        if (pattern[p] == '\0') {
             /* TODO: fix cast */
             return (int)t;
         }
