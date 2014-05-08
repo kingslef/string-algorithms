@@ -94,7 +94,8 @@ static const char *bm_good_suffix_test(const char *test_string,
     memset(good_suffix, 0, sizeof(good_suffix));
 
     mu_assert_equal("good suffix creation failed",
-                    bm_build_good_suffix(test_string, good_suffix), 0);
+                    bm_build_good_suffix(test_string, good_suffix, string_len),
+                    0);
 
     mu_assert_equal_array("wrong good suffix array created",
                           good_suffix,
@@ -124,7 +125,7 @@ static const char *bm_bad_char_test(const char *pattern, const char *indexes,
     }
 
     mu_assert_equal("bad char array creation failed",
-                    bm_build_bad_char(pattern, bad_char), 0);
+                    bm_build_bad_char(pattern, bad_char, pattern_len), 0);
 
     mu_assert_equal_array("wrong bad char rule array created",
                           bad_char,

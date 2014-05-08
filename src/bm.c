@@ -12,7 +12,6 @@
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
-
 /* Finds last occurance of needle in haystack */
 char *strrnstr(const char *haystack, const char *needle, const size_t haystack_len)
 {
@@ -33,14 +32,12 @@ char *strrnstr(const char *haystack, const char *needle, const size_t haystack_l
     return NULL;
 }
 
-int bm_build_good_suffix(const char *pattern, int *good_suffix)
+int bm_build_good_suffix(const char *pattern, int *good_suffix,
+                         const size_t pattern_len)
 {
     if (pattern == NULL) {
         return -1;
     }
-
-    /* TODO: remove strlen */
-    const uint32_t pattern_len = (uint32_t)strlen(pattern);
 
     DEBUG("%s: building suffix for %s\n", __func__, pattern);
 
@@ -74,7 +71,7 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix)
             }
             j++;
             if (j >= i) {
-                suffix == NULL;
+                suffix = NULL;
                 break;
             }
         } while (1);
@@ -152,14 +149,12 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix)
 }
 
 /* Pseudocode from Graham A. Stephen: String Searching Algorithms */
-int bm_build_bad_char(const char *pattern, uint32_t *bad_char)
+int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
+                      const size_t pattern_len)
 {
     if (pattern == NULL) {
         return -1;
     }
-
-    /* TODO: remove strlen */
-    const uint32_t pattern_len = (uint32_t)strlen(pattern);
 
     /* Set everything to maximum value first */
     for (uint32_t i = 0; i < ALPHABET_LEN; i++) {
@@ -187,21 +182,19 @@ int bm_match(const char *text, const char *pattern)
         return -1;
     }
 
-    /* TODO: remove strlen */
     const size_t pattern_len = strlen(pattern);
-    const size_t text_len = strlen(text);
 
     uint32_t bad_char[ALPHABET_LEN] = {0};
-    bm_build_bad_char(pattern, bad_char);
+    bm_build_bad_char(pattern, bad_char, pattern_len);
 
     /* TODO: add good suffix */
     int good_suffix[pattern_len + 1];
-    bm_build_good_suffix(pattern, good_suffix);
+    bm_build_good_suffix(pattern, good_suffix, pattern_len);
 
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
 
-    while (i < text_len) {
+    while (text[i] != '\0') {
 
         DEBUG("%s: checking from %zu\n",
               __func__, i);
