@@ -11,8 +11,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow -Wwrite-strings -Wconversion")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -g")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
 
-add_executable(test_main tests/test_main.c src/trivial.c src/kmp.c src/bm.c src/rk.c)
+add_library(strpat src/trivial.c src/kmp.c src/bm.c src/rk.c)
+if(UNIX)
+  target_link_libraries(strpat m)
+endif(UNIX)
 
-add_executable(fep src/fep.c src/trivial.c src/kmp.c src/bm.c src/rk.c)
+add_executable(test_main tests/test_main.c)
+target_link_libraries(test_main strpat)
+
+add_executable(fep src/fep.c)
+target_link_libraries(fep strpat)
