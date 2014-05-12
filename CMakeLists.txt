@@ -17,7 +17,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_POSIX_C_SOURCE=199309L")
 
 add_library(strpat src/trivial.c src/kmp.c src/bm.c src/rk.c)
 if(UNIX)
-  target_link_libraries(strpat m)
+  target_link_libraries(strpat m rt)
 endif(UNIX)
 
 add_executable(test_main tests/test_main.c)

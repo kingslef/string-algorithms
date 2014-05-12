@@ -2,11 +2,14 @@
 
 #include <limits.h>
 #include <string.h>
-
-/* TODO: remove */
 #include <stdio.h>
 
-#define DEBUG printf
+/* TODO: remove */
+#define DEBUG
+
+#ifdef DEBUG
+#include <time.h>
+#endif
 
 #define ALPHABET_LEN CHAR_MAX
 
@@ -182,12 +185,28 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
 
     const size_t pattern_len = strlen(pattern);
 
+#ifdef DEBUG
+    struct timespec t_start = { 0, 0 };
+    struct timespec t_end = { 0, 0 };
+
+    clock_gettime(CLOCK_MONOTONIC, &t_start);
+#endif
+
     uint32_t bad_char[ALPHABET_LEN] = {0};
     bm_build_bad_char(pattern, bad_char, pattern_len);
 
     /* TODO: add good suffix */
     int good_suffix[pattern_len + 1];
     bm_build_good_suffix(pattern, good_suffix, pattern_len);
+
+#ifdef DEBUG
+    clock_gettime(CLOCK_MONOTONIC, &t_end);
+
+    printf("%s: Preprocessing took %8ld ns\n",
+           __func__,
+           (((long)t_end.tv_sec * 1000000000 + t_end.tv_nsec) -
+            ((long)t_start.tv_sec * 1000000000 + t_start.tv_nsec)));
+#endif
 
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
