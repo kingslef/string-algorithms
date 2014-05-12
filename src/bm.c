@@ -9,6 +9,8 @@
 
 #ifdef DEBUG
 #include <time.h>
+#define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
+                                  ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 #endif
 
 #define ALPHABET_LEN CHAR_MAX
@@ -187,6 +189,7 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
 
 #ifdef DEBUG
     struct timespec t_start = { 0, 0 };
+    struct timespec t_end_bad = { 0, 0 };
     struct timespec t_end = { 0, 0 };
 
     clock_gettime(CLOCK_MONOTONIC, &t_start);
@@ -195,6 +198,10 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
     uint32_t bad_char[ALPHABET_LEN] = {0};
     bm_build_bad_char(pattern, bad_char, pattern_len);
 
+#ifdef DEBUG
+    clock_gettime(CLOCK_MONOTONIC, &t_end_bad);
+#endif
+
     /* TODO: add good suffix */
     int good_suffix[pattern_len + 1];
     bm_build_good_suffix(pattern, good_suffix, pattern_len);
@@ -202,10 +209,9 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
 #ifdef DEBUG
     clock_gettime(CLOCK_MONOTONIC, &t_end);
 
-    printf("%s: Preprocessing took %8ld ns\n",
-           __func__,
-           (((long)t_end.tv_sec * 1000000000 + t_end.tv_nsec) -
-            ((long)t_start.tv_sec * 1000000000 + t_start.tv_nsec)));
+    printf("%s: Preprocessing took %.2lf (%.2lf + %.2lf) ms\n",
+           __func__, CALC_DIFF_MS(t_start, t_end),
+           CALC_DIFF_MS(t_start, t_end_bad), CALC_DIFF_MS(t_end_bad, t_end));
 #endif
 
     size_t i = pattern_len - 1;
