@@ -1,7 +1,7 @@
 #include "trivial.h"
 
 #include <string.h>
-
+#include <stdio.h>
 
 /**
  * Searches for pattern in text using trivial algorithm.
@@ -15,6 +15,7 @@ int trivial_match(const char *text, const char *pattern,
         return -1;
     }
 
+    int first_match = -1;
     for (size_t t = 0; t < text_len; t++) {
         size_t p;
         for (p = 0; pattern[p] != '\0'; p++) {
@@ -23,10 +24,13 @@ int trivial_match(const char *text, const char *pattern,
             }
         }
         if (pattern[p] == '\0') {
-            /* TODO: fix cast */
-            return (int)t;
+            /* Match */
+            if (first_match == -1) {
+                first_match = t;
+            }
+            printf("trivial: match at %u\n", t);
         }
     }
 
-    return -1;
+    return first_match;
 }

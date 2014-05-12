@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 
 int kmp_build_border(const char *pattern, int *border,
                      const size_t pattern_len)
@@ -51,11 +52,16 @@ int kmp_match(const char *text, const char *pattern,
     uint32_t i = 0;
     uint32_t match = 0;
 
+    int first_match = -1;
     while (match + i < text_len) {
         if (pattern[i] == text[match + i]) {
             i++;
             if (i == pattern_len) {
-                return (int)match;
+                /* Match */
+                if (first_match == -1) {
+                    first_match = match;
+                }
+                printf("kmp: match at %u\n", match);
             }
         } else {
             match = match + i - border[i];
@@ -67,5 +73,5 @@ int kmp_match(const char *text, const char *pattern,
         }
     }
 
-    return -1;
+    return first_match;
 }

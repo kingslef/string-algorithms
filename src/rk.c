@@ -62,6 +62,7 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
         return 0;
     }
 
+    int first_match = -1;
     /* Calculate rolling hash from rest of the text and compare it to
      * pattern */
     for (uint32_t i = 1; i < text_len - pattern_len + 1; i++) {
@@ -76,19 +77,13 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
 
         if (hash_pattern == hash_text
             && strncmp(pattern, text + i, pattern_len) == 0) {
-
-            DEBUG("%s: matched: ", __func__);
-            for (uint32_t j = 0; j < pattern_len; j++) {
-                DEBUG("%c", text[i + j]);
+            if (first_match == -1) {
+                first_match = i;
             }
-            DEBUG(" == %s\n", pattern);
-
-            return i;
+            printf("rk: match at %u\n", i);
         }
-        DEBUG("%s", hash_pattern == hash_text ? "hashed match but strings don't\n" : "");
-
     }
 
-    return -1;
+    return first_match;
 }
 

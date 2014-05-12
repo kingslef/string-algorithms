@@ -164,8 +164,6 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
     /* Set values in pattern */
     for (uint32_t i = 0; i < pattern_len; i++) {
         bad_char[(int)pattern[i]] = pattern_len - i - 1;
-        /* DEBUG("%s: set badchar[%c] to %u (i %u)\n", __func__, pattern[i], */
-        /*       bad_char[(int)pattern[i]], i); */
     }
 
     return 0;
@@ -194,31 +192,36 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
 
+    int first_match = -1;
     while (i < text_len) {
 
         DEBUG("%s: checking from %zu\n",
               __func__, i);
+        size_t start = i;
 
         while (text[i] == pattern[j]) {
+            if (j == 0) {
+                /* Match */
+                if (first_match == -1) {
+                    first_match = i;
+                }
+                printf("bm: match at %u\n", i);
+                break;
+            }
+
             i--;
             j--;
-            if (j == 0 && text[i] == pattern[j]) {
-                /* Match */
-                /* TODO: handle cast */
-                return (int)i;
-            }
         }
 
-        DEBUG("%s: mismatch with text[%zu] and pattern[%zu]\n",
-              __func__, i, j);
+        const uint32_t matched = (pattern_len - 1 - j);
+        DEBUG("%s: matched %u\n", __func__, matched);
 
-
-        DEBUG("%s: increasing by %u (bad_char %u, good_suffix %u)\n",
-              __func__, MAX(bad_char[(int)text[i]], good_suffix[j+1]),
-              bad_char[(int)text[i]], good_suffix[j+1]);
-        i += MAX(bad_char[(int)text[i]], good_suffix[j+1]);
+        DEBUG("%s: increasing i (=%u) by %u (bad_char %u, good_suffix %u)\n",
+              __func__, i, MAX(bad_char[(int)text[i]] - matched, good_suffix[j+1]),
+              bad_char[(int)text[i]] - matched, good_suffix[j+1]);
+        i = start + MAX((int)bad_char[(int)text[i]] - (int)matched, good_suffix[j+1]);
         j = pattern_len - 1;
     }
 
-    return -1;
+    return first_match;
 }
