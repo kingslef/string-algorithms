@@ -29,6 +29,26 @@ static const char *match_func_names[ARRAY_LEN(match_funcs)] = { "kmp", "bm",
                                                                 "trivial",
                                                                 "rk" };
 
+static int (*choose_best(const char *text, const char *pattern))(const char*,
+                                                                 const char*,
+                                                                 const size_t)
+{
+    /**
+     * KMP: - Very bad when long pattern and match fails at the end.
+     *      - Good when not much partial matches in text (better than BM).
+     *
+     * BM:  - Good when long pattern.
+     *      - Good when pattern is not in the text.
+     *
+     * T:   - Good with ~20 char pattern and 100 lines.
+     *
+     * RK:  - Doesn't seem to be affected by much.
+     *
+     */
+
+    return kmp_match;
+}
+
 int main(int argc, const char *argv[])
 {
     int ret;
