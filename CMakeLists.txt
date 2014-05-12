@@ -14,3 +14,5 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lm")
 
 add_executable(test_main tests/test_main.c src/trivial.c src/kmp.c src/bm.c src/rk.c)
+
+add_executable(fep src/fep.c src/trivial.c src/kmp.c src/bm.c src/rk.c)
