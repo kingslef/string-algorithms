@@ -12,6 +12,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual -g")
 
+# Enable clock_gettime
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_POSIX_C_SOURCE=199309L")
+
 add_library(strpat src/trivial.c src/kmp.c src/bm.c src/rk.c)
 if(UNIX)
   target_link_libraries(strpat m)
@@ -21,4 +24,4 @@ add_executable(test_main tests/test_main.c)
 target_link_libraries(test_main strpat)
 
 add_executable(fep src/fep.c)
-target_link_libraries(fep strpat)
+target_link_libraries(fep strpat rt)

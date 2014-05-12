@@ -4,9 +4,13 @@
 #include <trivial.h>
 
 #include <stdio.h>
+#include <string.h>
+
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#include <time.h>
 #include <fcntl.h>
 
 #define ARRAY_LEN(x) (sizeof(x) / sizeof(x)[0])
@@ -33,31 +37,39 @@ int main(int argc, const char *argv[])
 
     int fd = open(argv[2], O_RDONLY);
     if (fd < 0) {
-        perror("open failed");
+        fprintf(stderr, "open for %s failed: %s\n", argv[2], strerror(fd));
         return 1;
     }
 
     struct stat statbuf;
-
     ret = fstat(fd, &statbuf);
     if (ret < 0) {
-        perror("fstat failed");
+        fprintf(stderr, "fstat for %s failed: %s\n", argv[2], strerror(fd));
         return 1;
     }
 
-    const char *text = mmap(NULL, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    size_t text_size = (size_t)statbuf.st_size;
+
+    const char *text = mmap(NULL, text_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (text == MAP_FAILED) {
-        perror("mmap failed");
+        fprintf(stderr, "mmap for %s failed: %s\n", argv[2], strerror(fd));
         return 1;
     }
 
     for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
-        ret = match_funcs[i](text, argv[1], statbuf.st_size);
-        if (ret < 0) {
-            printf("%s: pattern '%s' not found\n", match_func_names[i], argv[1]);
-        } else {
-            printf("%s: pattern '%s' found in %d\n", match_func_names[i], argv[1], ret);
-        }
+        struct timespec t_start = { 0, 0 };
+        struct timespec t_end = { 0, 0 };
+
+        clock_gettime(CLOCK_MONOTONIC, &t_start);
+
+        ret = match_funcs[i](text, argv[1], text_size);
+
+        clock_gettime(CLOCK_MONOTONIC, &t_end);
+
+        printf("%7s: '%s' %s %d. It took %8ld ns\n", match_func_names[i],
+               argv[1], (ret < 0 ? "not found:" : "found in"),
+               ret, (((long)t_end.tv_sec * 1000000000 + t_end.tv_nsec) -
+                     ((long)t_start.tv_sec * 1000000000 + t_start.tv_nsec)));
     }
 
     return 0;
