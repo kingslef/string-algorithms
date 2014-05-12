@@ -1,7 +1,7 @@
-#include <bm.h>
-#include <rk.h>
-#include <kmp.h>
-#include <trivial.h>
+#include "bm.h"
+#include "rk.h"
+#include "kmp.h"
+#include "trivial.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +14,10 @@
 #include <fcntl.h>
 
 #define ARRAY_LEN(x) (sizeof(x) / sizeof(x)[0])
+
+#define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
+                                  ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
+
 
 static int (*match_funcs[])(const char*,
                             const char*,
@@ -66,10 +70,9 @@ int main(int argc, const char *argv[])
 
         clock_gettime(CLOCK_MONOTONIC, &t_end);
 
-        printf("%7s: '%s' %s %d. It took %8ld ns\n", match_func_names[i],
+        printf("%7s: '%s' %s %d. It took %5.2lf ms\n", match_func_names[i],
                argv[1], (ret < 0 ? "not found:" : "found in"),
-               ret, (((long)t_end.tv_sec * 1000000000 + t_end.tv_nsec) -
-                     ((long)t_start.tv_sec * 1000000000 + t_start.tv_nsec)));
+               ret, CALC_DIFF_MS(t_start, t_end));
     }
 
     return 0;
