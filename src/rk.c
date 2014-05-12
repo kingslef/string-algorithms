@@ -3,9 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdint.h>
-
 #include <stdio.h>
-#define DEBUG printf
 
 /* Based on pseudocode in T-106.5400 Course notes 2012. */
 int rk_match(const char *text, const char *pattern, const size_t text_len)
@@ -28,11 +26,6 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
     uint32_t theta = 32;
     uint32_t q = (uint32_t)pow(2, 32);
 
-    DEBUG("%s: matching %s and %s\n", __func__, text, pattern);
-
-    DEBUG("%s: theta %u, q %u, pattern_len %u, text_len %u\n",
-          __func__, theta, q, pattern_len, text_len);
-
     /* TODO: remove pow */
     uint32_t cm = (uint32_t)pow(theta, pattern_len - 1) % q;
 
@@ -52,13 +45,6 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
     /* Check if calculated hashes match */
     if (hash_pattern == hash_text
         && strncmp(pattern, text, pattern_len) == 0) {
-
-        DEBUG("%s: matched: ", __func__);
-        for (uint32_t i = 0; i < pattern_len; i++) {
-            DEBUG("%c", text[i]);
-        }
-        DEBUG(" == %s\n", pattern);
-
         return 0;
     }
 
