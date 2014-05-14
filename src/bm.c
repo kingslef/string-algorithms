@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 
 /* TODO: remove */
 #define DEBUG
@@ -202,7 +203,6 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
     clock_gettime(CLOCK_MONOTONIC, &t_end_bad);
 #endif
 
-    /* TODO: add good suffix */
     int good_suffix[pattern_len + 1];
     bm_build_good_suffix(pattern, good_suffix, pattern_len);
 
@@ -237,6 +237,9 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
             i--;
             j--;
         }
+
+        /* We only can handle character within our alphabet */
+        assert((int)text[i] <= ALPHABET_LEN);
 
         const uint32_t matched = (pattern_len - 1 - j);
         DEBUG("%s: matched %u\n", __func__, matched);
