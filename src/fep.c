@@ -128,8 +128,9 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
-    choose_best_by_sampling(text, pattern, text_size);
+    uint32_t best_by_sampling = choose_best_by_sampling(text, pattern, text_size);
 
+    double execution_times[ARRAY_LEN(match_funcs)];
     for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
         struct timespec t_start = { 0, 0 };
         struct timespec t_end = { 0, 0 };
@@ -140,8 +141,14 @@ int main(int argc, const char *argv[])
 
         clock_gettime(CLOCK_MONOTONIC, &t_end);
 
-        printf("%7s: '%s' found %u times. It took %5.2lf ms\n", match_func_names[i],
-               pattern, ret, CALC_DIFF_MS(t_start, t_end));
+        execution_times[i] = CALC_DIFF_MS(t_start, t_end);
+    }
+
+    /* Report */
+    for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
+        printf("%10s: took %5.2lf ms (%+5.2lf ms to best by sampling)\n",
+               match_func_names[i], execution_times[i],
+               execution_times[i] - execution_times[best_by_sampling]);
     }
 
     return 0;
