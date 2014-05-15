@@ -221,9 +221,6 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
 
     uint32_t matched = 0;
     while (i < text_len) {
-
-        DEBUG("%s: checking from %zu\n",
-              __func__, i);
         size_t start = i;
 
         while (text[i] == pattern[j]) {
@@ -246,12 +243,8 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
         assert((int)text[i] <= ALPHABET_LEN);
 
         const uint32_t matched_chars = (pattern_len - 1 - j);
-        DEBUG("%s: matched_chars %u\n", __func__, matched_chars);
-
-        DEBUG("%s: increasing i (=%u) by %u (bad_char %u (%u), good_suffix %u)\n",
-              __func__, i, MAX(bad_char[(int)text[i]] - matched_chars, good_suffix[j+1]),
-              bad_char[(int)text[i]] - matched_chars, (unsigned int)text[i], good_suffix[j+1]);
-        i = start + MAX((int)bad_char[text[i]] - (int)matched_chars, good_suffix[j+1]);
+        i = start + MAX((int)bad_char[text[i]] - (int)matched_chars,
+                        good_suffix[j+1]);
         j = pattern_len - 1;
     }
 
