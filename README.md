@@ -59,6 +59,8 @@ algorithm encountered in any string algorithm course.
 Rabin-Karp doesn't offer anything since it mostly shines when searching for
 multiple patterns, but since it was easy to implement I chose it also.
 
+I wanted to implement shift-and but I didn't quite have time for it. Maybe later...
+
 To be able to compare running times of BM and KMP, I implemented basic trivial
 algorithm which loops the text through and looks for the pattern.
 
