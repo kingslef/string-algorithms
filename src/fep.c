@@ -205,14 +205,19 @@ int main(int argc, const char *argv[])
     double total = diff + CALC_DIFF_MS(sampling_start, sampling_end);
     printf("** Difference between fastest algorithm and algorithm chosen"
            " by sampling was:\n"
-           "   %+.2lf ms + %.2lf ms (time took by sampling) = %+.2lf ms\n",
-           diff, CALC_DIFF_MS(sampling_start, sampling_end), total);
+           "   %+.2lf ms + %.2lf ms (time took by sampling per algorithm) = %+.2lf ms\n",
+           diff, CALC_DIFF_MS(sampling_start, sampling_end) / ARRAY_LEN(algorithms), total);
 
-    if (diff > 0.0) {
+    /* Couple of millisecond difference should be acceptable */
+    /* TODO: This comparison is not very fair because it is affected by how many
+     * algorithms we have */
+    if (total / ARRAY_LEN(algorithms) > 3.0) {
         printf(" => Not worth it\n");
     } else {
         printf(" => Worth it\n");
     }
+
+    putchar('\n');
 
     diff = execution_times[best_by_analyzing]
         - execution_times[fastest];
@@ -223,11 +228,15 @@ int main(int argc, const char *argv[])
            "   %+.2lf ms + %.2lf ms (time took by analyzing) = %+.2lf ms\n",
            diff, CALC_DIFF_MS(analyzing_start, analyzing_end), total);
 
-    if (diff > 0.0) {
+    /* Couple millisecond difference should be acceptable */
+    if (total > 3.0) {
         printf(" => Not worth it\n");
     } else {
         printf(" => Worth it\n");
     }
+
+    printf("\nText length was %zu and pattern length was %zu characters\n",
+           text_size, strlen(pattern));
 
     return 0;
 }
