@@ -1,7 +1,7 @@
-#include "bm.h"
-#include "rk.h"
-#include "kmp.h"
-#include "trivial.h"
+#include "algorithms/bm.h"
+#include "algorithms/rk.h"
+#include "algorithms/kmp.h"
+#include "algorithms/trivial.h"
 
 #include <stdio.h>
 #include <string.h>
