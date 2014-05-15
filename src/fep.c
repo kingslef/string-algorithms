@@ -209,5 +209,20 @@ int main(int argc, const char *argv[])
         printf(" => Worth it\n");
     }
 
+    diff = execution_times[best_by_analyzing]
+        - execution_times[fastest];
+
+    total = diff + CALC_DIFF_MS(analyzing_start, analyzing_end);
+    printf("** Difference between fastest algorithm and algorithm chosen"
+           " by analyzing was:\n"
+           "   %+.2lf ms + %.2lf ms (time took by analyzing) = %+.2lf ms\n",
+           diff, CALC_DIFF_MS(analyzing_start, analyzing_end), total);
+
+    if (diff > 0.0) {
+        printf(" => Not worth it\n");
+    } else {
+        printf(" => Worth it\n");
+    }
+
     return 0;
 }
