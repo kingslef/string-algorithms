@@ -4,9 +4,9 @@
 #include <stdio.h>
 
 /**
- * Searches for pattern in text using trivial algorithm.
+ * Find occurances of pattern in text using trivial algorithm.
  *
- * @returns how many times pattern is included in the text.
+ * @returns number of occurances of pattern in text.
  */
 uint32_t trivial_match(const char *text, const char *pattern,
                        const size_t text_len)

@@ -176,11 +176,13 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
 }
 
 /**
- * Suitable if pattern is large
- *   [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf]
+ * Find occurances of pattern in text using Boyer-Moore algorithm.
  *
- * Pseudocode from T-106.5400 Course notes 2012, except that it didn't calculate
- * how many characters matched when using bad character rule.
+ * @note Based on the pseudocode in T-106.5400 Course notes 2012, except that it
+ * didn't calculate how many characters matched when using bad character rule
+ * and that seemed to cause mismatches.
+ *
+ * @return number of occurances of pattern in text.
  */
 uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
 {

@@ -5,7 +5,13 @@
 #include <stdint.h>
 #include <stdio.h>
 
-/* Based on pseudocode in T-106.5400 Course notes 2012. */
+/**
+ * Find occurances of pattern in text using Rabin-Karp algorithm.
+ *
+ * @note Based on the pseudocode in T-106.5400 Course notes 2012.
+ *
+ * @return number of occurances of pattern in text.
+ */
 uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
