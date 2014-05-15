@@ -55,11 +55,14 @@ static uint32_t (*choose_best(const char *text, const char *pattern))(const char
  * algorithms with something to precomputate before checking matches will
  * suffer. Then again, if sampling size is large, we won't get any use of doing this.
  */
-static int choose_best_by_sampling(const char *text, const char *pattern, const size_t text_len)
+static uint32_t choose_best_by_sampling(const char *text, const char *pattern,
+                                        const size_t text_len)
 {
     const size_t pattern_len = strlen(pattern);
+    const size_t sample_size = text_len / 4;
 
-    if (text_len < pattern_len * 2) {
+
+    if (sample_size < pattern_len * 2) {
         return 0;
     }
 
@@ -72,7 +75,7 @@ static int choose_best_by_sampling(const char *text, const char *pattern, const 
 
         clock_gettime(CLOCK_MONOTONIC, &t_start);
 
-        match_funcs[i](text, pattern, pattern_len * 2);
+        match_funcs[i](text, pattern, sample_size);
 
         clock_gettime(CLOCK_MONOTONIC, &t_end);
 
