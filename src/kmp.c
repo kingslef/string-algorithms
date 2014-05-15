@@ -4,13 +4,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-int kmp_build_border(const char *pattern, uint32_t *border,
+void kmp_build_border(const char *pattern, uint32_t *border,
                      const size_t pattern_len)
 {
-    if (border == NULL || pattern == NULL || border == NULL) {
-        return -1;
-    }
-
     if (pattern_len > 0) {
         border[0] = 0;
     }
@@ -29,9 +25,6 @@ int kmp_build_border(const char *pattern, uint32_t *border,
         border[i] = candidate;
         i++;
     }
-
-    /* TODO: remove return value */
-    return 0;
 }
 
 /**

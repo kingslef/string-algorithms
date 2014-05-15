@@ -86,8 +86,7 @@ static const char *kmp_border_test(const char *test_string,
 
     memset(border, 0, sizeof(border));
 
-    mu_assert_equal("border creation failed",
-                    kmp_build_border(test_string, border, string_len), 0);
+    kmp_build_border(test_string, border, string_len);
 
     mu_assert_equal_array("wrong border array created",
                           border,
@@ -121,17 +120,17 @@ static const char *bm_good_suffix_test(const char *test_string,
 static const char *bm_bad_char_test(const char *pattern, const char *indexes,
                                     const uint32_t *values)
 {
-    uint32_t bad_char[CHAR_MAX];
-    uint32_t bad_char_correct[CHAR_MAX];
+    uint32_t bad_char[ALPHABET_LEN];
+    uint32_t bad_char_correct[ALPHABET_LEN];
 
     const uint32_t pattern_len = (uint32_t)strlen(pattern);
 
-    for (uint32_t i = 0; i < CHAR_MAX; i++) {
+    for (uint32_t i = 0; i < ALPHABET_LEN; i++) {
         bad_char_correct[i] = pattern_len;
     }
 
     while (*indexes != '\0') {
-        bad_char_correct[(int)*indexes] = *values;
+        bad_char_correct[*indexes] = *values;
         indexes++;
         values++;
     }
@@ -226,7 +225,6 @@ static const char *all_tests(void)
                                     (const int32_t []){6, 6, 6, 6, 6, 6, 6, 8, 1}));
     mu_run_test(bm_good_suffix_test("ABCDABC",
                                     (const int32_t []){4, 4, 4, 4, 4, 7, 7, 1}));
-    /* TODO: check if correct */
     mu_run_test(bm_good_suffix_test("GCAGAGAG",
                                     (const int32_t []){7, 7, 7, 7, 2, 7, 4, 7, 1}));
 

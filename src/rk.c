@@ -64,7 +64,6 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
     /* Calculate rolling hash from rest of the text and compare it to
      * pattern */
     for (uint32_t i = 1; i < text_len - pattern_len + 1; i++) {
-
         /* New hash is calculated:
            - Subtract previous character times cm,
            - Multiply that by theta,
@@ -92,4 +91,3 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
 
     return matched;
 }
-

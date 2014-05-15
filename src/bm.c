@@ -1,9 +1,7 @@
 #include "bm.h"
 
-#include <limits.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
 
 /* TODO: remove */
 #define DEBUG
@@ -13,8 +11,6 @@
 #define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 #endif
-
-#define ALPHABET_LEN CHAR_MAX
 
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
 
@@ -155,13 +151,9 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix,
 }
 
 /* Pseudocode from Graham A. Stephen: String Searching Algorithms */
-int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
-                      const size_t pattern_len)
+void bm_build_bad_char(const char *pattern, uint32_t *bad_char,
+                       const size_t pattern_len)
 {
-    if (pattern == NULL) {
-        return -1;
-    }
-
     /* Set everything to maximum value first */
     for (uint32_t i = 0; i < ALPHABET_LEN; i++) {
         bad_char[i] = pattern_len;
@@ -169,10 +161,8 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
 
     /* Set values in pattern */
     for (uint32_t i = 0; i < pattern_len; i++) {
-        bad_char[(int)pattern[i]] = pattern_len - i - 1;
+        bad_char[pattern[i]] = pattern_len - i - 1;
     }
-
-    return 0;
 }
 
 /**
@@ -230,9 +220,9 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
                 /* Match */
                 matched++;
                 if (matched == 1) {
-                    printf("bm: match at %u", i);
+                    printf("bm: match at %zu", i);
                 } else {
-                    printf(", %u", i);
+                    printf(", %zu", i);
                 }
                 break;
             }
@@ -240,9 +230,6 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
             i--;
             j--;
         }
-
-        /* We only can handle character within our alphabet */
-        assert((int)text[i] <= ALPHABET_LEN);
 
         const uint32_t matched_chars = (pattern_len - 1 - j);
         i = start + MAX((int)bad_char[text[i]] - (int)matched_chars,
