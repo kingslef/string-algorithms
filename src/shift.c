@@ -7,6 +7,7 @@
 
 #define ALPHABET_LEN CHAR_MAX
 
+/* TODO: remove or complete */
 int shift_precompute(const char *pattern, uint32_t *array)
 {
     /* Let's assume that word size is 32 bits. */
