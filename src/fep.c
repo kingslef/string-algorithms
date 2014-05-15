@@ -31,7 +31,8 @@ static string_algorithm_t algorithms[] = {
     { .name = "bm", .func = bm_match },
     { .name = "trivial", .func = trivial_match },
     { .name = "rk", .func = rk_match },
-    { .name = "trivial_mem", .func = trivial_mem_match }
+    { .name = "trivial_mem", .func = trivial_mem_match },
+    { .name = "NULL", .func = NULL }
 };
 
 enum algorithms_t {
@@ -87,12 +88,14 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
     /* If text is quite short, it is fastest
        use trivial algorithm */
     if (text_len <= 10000) {
+        *time_taken = CALC_DIFF_MS(start_time, get_time());
         return trivial;
     }
 
     /* If pattern is not too long but text is large,
        bm should be fastest */
     if (pattern_len <= 200 && text_len >= 10000) {
+        *time_taken = CALC_DIFF_MS(start_time, get_time());
         return bm;
     }
 
@@ -126,6 +129,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
 
 
     if (sample_size < pattern_len * 2) {
+        *time_taken = CALC_DIFF_MS(start_time, get_time());
         return trivial;
     }
 
@@ -204,6 +208,15 @@ static void find_pattern(const char *text, const size_t text_len,
     }
 }
 
+
+/**
+ * Main function for the searcher.
+ *
+ * Try to choose best string searching algorithm for given pattern and text
+ * using @func choose_best_by_analyzing and @func choose_best_by_sampling. Then
+ * ran all algorithms in algorithms[] on it and report if the analyzing or
+ * sampling was worth it or not.
+ */
 int main(int argc, const char *argv[])
 {
     const char *pattern;
