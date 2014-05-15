@@ -52,6 +52,16 @@ static inline struct timespec get_time(void)
     return t;
 }
 
+
+/**
+ * Try to choose best algorithm by analyzing the length of the pattern and text.
+ *
+ * By running all algorithms with few texts and patterns, I decided to try this
+ * kind of approach for choosing the best algorithm.
+ *
+ * @return fastest algorithm chosen by looking at the lengths and total time
+ * taken by sampling in @param time_taken.
+ */
 static enum algorithms_t choose_best_by_analyzing(const char *text,
                                                   const char *pattern,
                                                   const size_t text_len,
@@ -92,9 +102,17 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
 }
 
 /**
+ * Try to choose best algorithm by sampling.
+ *
+ * Runs all algorithms (except trivial_mem) on part of the text and returns
+ * fastest.
+ *
  * It doesn't make sense to do this if the sampling size is small, since
- * algorithms with something to precomputate before checking matches will
- * suffer. Then again, if sampling size is large, we won't get any use of doing this.
+ * algorithms with something to precompute will suffer. Then again, if sampling
+ * size is large, we won't get any benefit from doing this.
+ *
+ * @return fastest algorithm ran on the sample and total time taken by sampling
+ * in @param time_taken.
  */
 static enum algorithms_t choose_best_by_sampling(const char *text,
                                                  const char *pattern,
@@ -102,6 +120,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
                                                  double *time_taken)
 {
     struct timespec start_time = get_time();
+    /* TODO: don't run the whole pattern */
     const size_t pattern_len = strlen(pattern);
     const size_t sample_size = text_len / 4;
 
@@ -113,7 +132,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     double fastest_time = 0.0;
     enum algorithms_t fastest_func = end;
 
-    for (enum algorithms_t a = kmp; a != end; a++) {
+    for (enum algorithms_t a = kmp; a != trivial_mem; a++) {
         struct timespec t_start = get_time();
 
         algorithms[a].func(text, pattern, sample_size);
@@ -213,7 +232,9 @@ int main(int argc, const char *argv[])
     double execution_times[ARRAY_LEN(algorithms)];
     find_pattern(text, text_size, pattern, execution_times);
 
-    /* Report */
+    /* Find fastest algorithm. Report trivial_mem but don't count it as
+     * fastest. */
+    /* TODO: describe that it is not counted in README */
     enum algorithms_t fastest = end;
     for (enum algorithms_t a = kmp; a != end; a++) {
         printf("%-10s %5.2lf ms\n"
@@ -223,8 +244,8 @@ int main(int argc, const char *argv[])
                execution_times[a] - execution_times[best_by_sampling],
                execution_times[a] - execution_times[best_by_analyzing]);
 
-        if (fastest == end
-            || execution_times[a] < execution_times[fastest]) {
+        if (a != trivial_mem && (fastest == end
+                                 || execution_times[a] < execution_times[fastest])) {
             fastest = a;
         }
     }
@@ -233,9 +254,10 @@ int main(int argc, const char *argv[])
         - execution_times[fastest];
 
     double total = diff + sampling_time;
-    printf("** Difference between fastest algorithm and algorithm chosen"
-           " by sampling was:\n"
+    printf("** Difference between fastest algorithm (%s) and algorithm chosen"
+           " by sampling (%s) was:\n"
            "   %+.2lf ms + %.2lf ms (time took by sampling per algorithm) = %+.2lf ms\n",
+           algorithms[fastest].name, algorithms[best_by_sampling].name,
            diff, sampling_time, total);
 
     /* Couple of millisecond difference should be acceptable */
@@ -253,9 +275,10 @@ int main(int argc, const char *argv[])
         - execution_times[fastest];
 
     total = diff + analyzing_time;
-    printf("** Difference between fastest algorithm and algorithm chosen"
-           " by analyzing was:\n"
+    printf("** Difference between fastest algorithm (%s) and algorithm chosen"
+           " by analyzing (%s) was:\n"
            "   %+.2lf ms + %.2lf ms (time took by analyzing) = %+.2lf ms\n",
+           algorithms[fastest].name, algorithms[best_by_analyzing].name,
            diff, analyzing_time, total);
 
     /* Couple millisecond difference should be acceptable */
