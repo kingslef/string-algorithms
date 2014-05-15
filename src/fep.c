@@ -19,19 +19,28 @@
 #define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 
-static uint32_t (*match_funcs[])(const char*,
-                                 const char*,
-                                 const size_t) = { kmp_match, bm_match,
-                                                   trivial_match,
-                                                   rk_match };
+typedef struct {
+    const char *name;
+    uint32_t (*func)(const char *, const char *, const size_t);
+} string_algorithm_t;
 
-static const char *match_func_names[ARRAY_LEN(match_funcs)] = { "kmp", "bm",
-                                                                "trivial",
-                                                                "rk" };
+static string_algorithm_t algorithms[] = {
+    { .name = "kmp", .func = kmp_match },
+    { .name = "bm", .func = bm_match },
+    { .name = "trivial", .func = trivial_match },
+    { .name = "rk", .func = rk_match }
+};
 
-static uint32_t (*choose_best(const char *text, const char *pattern))(const char*,
-                                                                      const char*,
-                                                                      const size_t)
+enum algorithms_t {
+    kmp,
+    bm,
+    trivial,
+    rk,
+    end
+};
+
+static enum algorithms_t choose_best_by_analyzing(const char *text, const char *pattern,
+                                         const size_t text_len)
 {
     /**
      * KMP: - Very bad when long pattern and match fails at the end.
@@ -47,7 +56,16 @@ static uint32_t (*choose_best(const char *text, const char *pattern))(const char
      *
      */
 
-    return kmp_match;
+    const size_t pattern_len = strlen(pattern);
+
+    /* If pattern and text are quite small, it is fastest
+       use trivial algorithm */
+    if (pattern_len <= 20 && text_len <= 800) {
+        return trivial;
+    }
+
+
+    return 1;
 }
 
 /**
@@ -55,42 +73,43 @@ static uint32_t (*choose_best(const char *text, const char *pattern))(const char
  * algorithms with something to precomputate before checking matches will
  * suffer. Then again, if sampling size is large, we won't get any use of doing this.
  */
-static uint32_t choose_best_by_sampling(const char *text, const char *pattern,
-                                        const size_t text_len)
+static enum algorithms_t choose_best_by_sampling(const char *text,
+                                                const char *pattern,
+                                                const size_t text_len)
 {
     const size_t pattern_len = strlen(pattern);
     const size_t sample_size = text_len / 4;
 
 
     if (sample_size < pattern_len * 2) {
-        return 0;
+        return trivial;
     }
 
     double fastest_time = 0.0;
-    int fastest_func = -1;
+    enum algorithms_t fastest_func = end;
 
-    for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
+    for (enum algorithms_t a = kmp; a != end; a++) {
         struct timespec t_start = { 0, 0 };
         struct timespec t_end = { 0, 0 };
 
         clock_gettime(CLOCK_MONOTONIC, &t_start);
 
-        match_funcs[i](text, pattern, sample_size);
+        algorithms[a].func(text, pattern, sample_size);
 
         clock_gettime(CLOCK_MONOTONIC, &t_end);
 
         double run_time = CALC_DIFF_MS(t_start, t_end);
 
-        printf("%s: %s took %5.2lf ms\n", __func__, match_func_names[i],
+        printf("%s: %s took %5.2lf ms\n", __func__, algorithms[a].name,
                run_time);
 
-        if (fastest_func == -1 || run_time < fastest_time) {
+        if (fastest_func == end || run_time < fastest_time) {
             fastest_time = run_time;
-            fastest_func = i;
+            fastest_func = a;
         }
     }
 
-    printf("%s chose %s\n", __func__, (fastest_func != -1 ? match_func_names[fastest_func] :
+    printf("%s chose %s\n", __func__, (fastest_func != end ? algorithms[fastest_func].name :
                                        "none"));
 
     return fastest_func;
@@ -140,36 +159,43 @@ int main(int argc, const char *argv[])
     }
 
     struct timespec sampling_start = calc_time();
-
-    uint32_t best_by_sampling = choose_best_by_sampling(text, pattern, text_size);
-
+    enum algorithms_t best_by_sampling = choose_best_by_sampling(text, pattern, text_size);
     struct timespec sampling_end = calc_time();
 
-    double execution_times[ARRAY_LEN(match_funcs)];
-    for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
+    struct timespec analyzing_start = calc_time();
+    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(text, pattern, text_size);
+    struct timespec analyzing_end = calc_time();
+
+
+    double execution_times[ARRAY_LEN(algorithms)];
+    for (enum algorithms_t a = kmp; a != end; a++) {
         struct timespec time_start = calc_time();
 
-        ret = match_funcs[i](text, pattern, text_size);
+        ret = algorithms[a].func(text, pattern, text_size);
 
         struct timespec time_end = calc_time();
 
-        execution_times[i] = CALC_DIFF_MS(time_start, time_end);
+        execution_times[a] = CALC_DIFF_MS(time_start, time_end);
     }
 
     /* Report */
-    int fastest_func = -1;
-    for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
-        printf("%10s: took %5.2lf ms (%+5.2lf ms to best by sampling)\n",
-               match_func_names[i], execution_times[i],
-               execution_times[i] - execution_times[best_by_sampling]);
-        if (fastest_func == -1
-            || execution_times[i] < execution_times[fastest_func]) {
-            fastest_func = i;
+    enum algorithms_t fastest = end;
+    for (enum algorithms_t a = kmp; a != end; a++) {
+        printf("%-10s %5.2lf ms\n"
+               "\t(%+5.2lf ms to sampling)\n"
+               "\t(%+5.2lf ms to analyzing)\n\n",
+               algorithms[a].name, execution_times[a],
+               execution_times[a] - execution_times[best_by_sampling],
+               execution_times[a] - execution_times[best_by_analyzing]);
+
+        if (fastest == end
+            || execution_times[a] < execution_times[fastest]) {
+            fastest = a;
         }
     }
 
     double diff = execution_times[best_by_sampling]
-        - execution_times[fastest_func];
+        - execution_times[fastest];
 
     double total = diff + CALC_DIFF_MS(sampling_start, sampling_end);
     printf("** Difference between fastest algorithm and algorithm chosen"
