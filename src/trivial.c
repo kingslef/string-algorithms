@@ -6,16 +6,16 @@
 /**
  * Searches for pattern in text using trivial algorithm.
  *
- * @returns -1 if no match or position in text where match starts.
+ * @returns how many times pattern is included in the text.
  */
-int trivial_match(const char *text, const char *pattern,
-                  const size_t text_len)
+uint32_t trivial_match(const char *text, const char *pattern,
+                       const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
-        return -1;
+        return 0;
     }
 
-    int first_match = -1;
+    uint32_t matched = 0;
     for (size_t t = 0; t < text_len; t++) {
         size_t p;
         for (p = 0; pattern[p] != '\0'; p++) {
@@ -25,12 +25,10 @@ int trivial_match(const char *text, const char *pattern,
         }
         if (pattern[p] == '\0') {
             /* Match */
-            if (first_match == -1) {
-                first_match = t;
-            }
+            matched++;
             printf("trivial: match at %u\n", t);
         }
     }
 
-    return first_match;
+    return matched;
 }

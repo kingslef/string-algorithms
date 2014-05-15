@@ -175,15 +175,17 @@ int bm_build_bad_char(const char *pattern, uint32_t *bad_char,
     return 0;
 }
 
-/* Suitable if pattern is large
-   [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf]
-
-   Pseudocode from T-106.5400 Course notes 2012.
-*/
-int bm_match(const char *text, const char *pattern, const size_t text_len)
+/**
+ * Suitable if pattern is large
+ *   [http://www.cs.uku.fi/~kilpelai/BSA05/lectures/slides03.pdf]
+ *
+ * Pseudocode from T-106.5400 Course notes 2012, except that it didn't calculate
+ * how many characters matched when using bad character rule.
+ */
+uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
-        return -1;
+        return 0;
     }
 
     const size_t pattern_len = strlen(pattern);
@@ -217,7 +219,7 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
     size_t i = pattern_len - 1;
     size_t j = pattern_len - 1;
 
-    int first_match = -1;
+    uint32_t matched = 0;
     while (i < text_len) {
 
         DEBUG("%s: checking from %zu\n",
@@ -227,10 +229,8 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
         while (text[i] == pattern[j]) {
             if (j == 0) {
                 /* Match */
-                if (first_match == -1) {
-                    first_match = i;
-                }
                 printf("bm: match at %u\n", i);
+                matched++;
                 break;
             }
 
@@ -241,15 +241,15 @@ int bm_match(const char *text, const char *pattern, const size_t text_len)
         /* We only can handle character within our alphabet */
         assert((int)text[i] <= ALPHABET_LEN);
 
-        const uint32_t matched = (pattern_len - 1 - j);
-        DEBUG("%s: matched %u\n", __func__, matched);
+        const uint32_t matched_chars = (pattern_len - 1 - j);
+        DEBUG("%s: matched_chars %u\n", __func__, matched_chars);
 
-        DEBUG("%s: increasing i (=%u) by %u (bad_char %u, good_suffix %u)\n",
-              __func__, i, MAX(bad_char[(int)text[i]] - matched, good_suffix[j+1]),
-              bad_char[(int)text[i]] - matched, good_suffix[j+1]);
-        i = start + MAX((int)bad_char[(int)text[i]] - (int)matched, good_suffix[j+1]);
+        DEBUG("%s: increasing i (=%u) by %u (bad_char %u (%u), good_suffix %u)\n",
+              __func__, i, MAX(bad_char[(int)text[i]] - matched_chars, good_suffix[j+1]),
+              bad_char[(int)text[i]] - matched_chars, (unsigned int)text[i], good_suffix[j+1]);
+        i = start + MAX((int)bad_char[text[i]] - (int)matched_chars, good_suffix[j+1]);
         j = pattern_len - 1;
     }
 
-    return first_match;
+    return matched;
 }

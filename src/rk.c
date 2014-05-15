@@ -6,21 +6,21 @@
 #include <stdio.h>
 
 /* Based on pseudocode in T-106.5400 Course notes 2012. */
-int rk_match(const char *text, const char *pattern, const size_t text_len)
+uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
-        return -1;
+        return 0;
     }
 
     uint32_t pattern_len = strlen(pattern);
 
     /* TODO: remove len checks */
     if (pattern_len > text_len || pattern_len == 0 || text_len == 0) {
-        return -1;
+        return 0;
     }
 
     if (pattern_len == 1 && text_len >= 1) {
-        return (pattern[0] == text[0] ? 0 : -1);
+        return (pattern[0] == text[0] ? 1 : 0);
     }
 
     uint32_t theta = 32;
@@ -42,13 +42,16 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
         hash_text = (hash_text * theta + text[i]) % q;
     }
 
+    uint32_t matched = 0;
+
     /* Check if calculated hashes match */
     if (hash_pattern == hash_text
         && strncmp(pattern, text, pattern_len) == 0) {
-        return 0;
+        /* Match */
+        matched++;
+        printf("rk: match at %u\n", 0);
     }
 
-    int first_match = -1;
     /* Calculate rolling hash from rest of the text and compare it to
      * pattern */
     for (uint32_t i = 1; i < text_len - pattern_len + 1; i++) {
@@ -63,13 +66,12 @@ int rk_match(const char *text, const char *pattern, const size_t text_len)
 
         if (hash_pattern == hash_text
             && strncmp(pattern, text + i, pattern_len) == 0) {
-            if (first_match == -1) {
-                first_match = i;
-            }
+            /* Match */
+            matched++;
             printf("rk: match at %u\n", i);
         }
     }
 
-    return first_match;
+    return matched;
 }
 

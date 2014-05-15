@@ -34,11 +34,11 @@ int kmp_build_border(const char *pattern, int *border,
     return 0;
 }
 
-int kmp_match(const char *text, const char *pattern,
-              const size_t text_len)
+uint32_t kmp_match(const char *text, const char *pattern,
+                   const size_t text_len)
 {
     if (text == NULL || pattern == NULL) {
-        return -1;
+        return 0;
     }
 
     const size_t pattern_len = strlen(pattern);
@@ -52,15 +52,13 @@ int kmp_match(const char *text, const char *pattern,
     uint32_t i = 0;
     uint32_t match = 0;
 
-    int first_match = -1;
+    uint32_t matched = 0;
     while (match + i < text_len) {
         if (pattern[i] == text[match + i]) {
             i++;
             if (i == pattern_len) {
                 /* Match */
-                if (first_match == -1) {
-                    first_match = match;
-                }
+                matched++;
                 printf("kmp: match at %u\n", match);
             }
         } else {
@@ -73,5 +71,5 @@ int kmp_match(const char *text, const char *pattern,
         }
     }
 
-    return first_match;
+    return matched;
 }

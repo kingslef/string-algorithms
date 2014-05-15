@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -19,19 +20,19 @@
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 
 
-static int (*match_funcs[])(const char*,
-                            const char*,
-                            const size_t) = { kmp_match, bm_match,
-                                              trivial_match,
-                                              rk_match };
+static uint32_t (*match_funcs[])(const char*,
+                                 const char*,
+                                 const size_t) = { kmp_match, bm_match,
+                                                   trivial_match,
+                                                   rk_match };
 
 static const char *match_func_names[ARRAY_LEN(match_funcs)] = { "kmp", "bm",
                                                                 "trivial",
                                                                 "rk" };
 
-static int (*choose_best(const char *text, const char *pattern))(const char*,
-                                                                 const char*,
-                                                                 const size_t)
+static uint32_t (*choose_best(const char *text, const char *pattern))(const char*,
+                                                                      const char*,
+                                                                      const size_t)
 {
     /**
      * KMP: - Very bad when long pattern and match fails at the end.
@@ -139,9 +140,8 @@ int main(int argc, const char *argv[])
 
         clock_gettime(CLOCK_MONOTONIC, &t_end);
 
-        printf("%7s: '%s' %s %d. It took %5.2lf ms\n", match_func_names[i],
-               pattern, (ret < 0 ? "not found:" : "found in"),
-               ret, CALC_DIFF_MS(t_start, t_end));
+        printf("%7s: '%s' found %u times. It took %5.2lf ms\n", match_func_names[i],
+               pattern, ret, CALC_DIFF_MS(t_start, t_end));
     }
 
     return 0;

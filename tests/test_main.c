@@ -12,37 +12,27 @@
 
 static int tests_run;
 
-static int find_needle(const char *haystack, const char *needle)
-{
-    char *f = strstr(haystack, needle);
-    if (f == NULL) {
-        return -1;
-    }
-
-    return (int)(f - haystack);
-}
-
-static const char *test_match_negative(int (*match_func)(const char*,
-                                                         const char*,
-                                                         const size_t))
+static const char *test_match_negative(uint32_t (*match_func)(const char*,
+                                                              const char*,
+                                                              const size_t))
 {
     mu_assert_equal("unexisting pattern was found",
-                    match_func("foo", "bar", 3), -1);
+                    match_func("foo", "bar", 3), 0);
     mu_assert_equal("unexisting pattern was found",
-                    match_func("fo", "foo", 2), -1);
+                    match_func("fo", "foo", 2), 0);
     mu_assert_equal("unexisting pattern was found",
-                    match_func("fo", NULL, 2), -1);
+                    match_func("fo", NULL, 2), 0);
     mu_assert_equal("unexisting pattern was found",
-                    match_func(NULL, NULL, 0), -1);
+                    match_func(NULL, NULL, 0), 0);
     mu_assert_equal("unexisting pattern was found",
-                    match_func(NULL, "foo", 0), -1);
+                    match_func(NULL, "foo", 0), 0);
 
     return NULL;
 }
 
-static const char *test_match_positive(int (*match_func)(const char*,
-                                                         const char*,
-                                                         const size_t))
+static const char *test_match_positive(uint32_t (*match_func)(const char*,
+                                                              const char*,
+                                                              const size_t))
 {
     const char *pattern;
     const char *text;
@@ -51,38 +41,37 @@ static const char *test_match_positive(int (*match_func)(const char*,
     pattern = "foo";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
+                    1);
 
     text = "barfoo";
     pattern = "foo";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
+                    1);
 
     text = "barfoo rfoobarr foobar";
     pattern = "foobar";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
+                    2);
 
     text = "foobafoobafoobafoobafrboofarfoobar";
     pattern = "foobar";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
+                    1);
 
     text = "HOOWOOWOOHOOWOOWOO";
     pattern = "WOOHOO";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
+                    1);
 
     text = "SALLILAILLATAVANLALLILLALLALALLI";
     pattern = "LALLILLA";
     mu_assert_equal("pattern was not found", match_func(text, pattern,
                                                         strlen(text)),
-                    find_needle(text, pattern));
-
+                    1);
 
     return NULL;
 }
