@@ -77,9 +77,9 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
         return trivial;
     }
 
-    /* If pattern is very short but text is large,
+    /* If pattern is not too long but text is large,
        bm should be fastest */
-    if (pattern_len <= 5 && text_len >= 10000) {
+    if (pattern_len <= 200 && text_len >= 10000) {
         return bm;
     }
 
