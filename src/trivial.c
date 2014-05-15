@@ -27,9 +27,9 @@ uint32_t trivial_match(const char *text, const char *pattern,
             /* Match */
             matched++;
             if (matched == 1) {
-                printf("trivial: match at %u", t);
+                printf("trivial: match at %zu", t);
             } else {
-                printf(", %u", t);
+                printf(", %zu", t);
             }
         }
     }
