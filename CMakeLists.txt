@@ -12,11 +12,16 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-char-subscripts")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 
 # Enable clock_gettime
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_POSIX_C_SOURCE=199309L")
+# Enable memmem(3)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE")
 
-add_library(strpat src/algorithms/trivial.c src/algorithms/kmp.c src/algorithms/bm.c src/algorithms/rk.c)
+add_library(strpat src/algorithms/trivial.c src/algorithms/trivial_mem.c
+  src/algorithms/kmp.c src/algorithms/bm.c src/algorithms/rk.c)
+
 if(UNIX)
   target_link_libraries(strpat m rt)
 endif(UNIX)

@@ -18,5 +18,6 @@ src/fep.c **.
             *   ** kmp.c ** Knuth-Morris-Pratt string searching algorithm.
             *   ** bm.c ** Boyer-Moore string searching algorithm.
             *   ** rk.c ** Rabin-Karp string searching algorithm.
+            *   ** trivial_mem.c ** Trivial algorithm using glibc functions.
 *   ** tests/ **  Directory for unit tests.
        * ** test_main.c ** Unit tests.

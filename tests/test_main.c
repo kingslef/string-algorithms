@@ -1,4 +1,5 @@
 #include <algorithms/trivial.h>
+#include <algorithms/trivial_mem.h>
 #include <algorithms/kmp.h>
 #include <algorithms/bm.h>
 #include <algorithms/rk.h>
@@ -235,6 +236,10 @@ static const char *all_tests(void)
     /* RK algorithm tests */
     mu_run_test(test_match_negative(rk_match));
     mu_run_test(test_match_positive(rk_match));
+
+    /* Trivial mem tests */
+    mu_run_test(test_match_negative(trivial_mem_match));
+    mu_run_test(test_match_positive(trivial_mem_match));
 
     return NULL;
 }

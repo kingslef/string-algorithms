@@ -2,6 +2,7 @@
 #include "algorithms/rk.h"
 #include "algorithms/kmp.h"
 #include "algorithms/trivial.h"
+#include "algorithms/trivial_mem.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -29,7 +30,8 @@ static string_algorithm_t algorithms[] = {
     { .name = "kmp", .func = kmp_match },
     { .name = "bm", .func = bm_match },
     { .name = "trivial", .func = trivial_match },
-    { .name = "rk", .func = rk_match }
+    { .name = "rk", .func = rk_match },
+    { .name = "trivial_mem", .func = trivial_mem_match }
 };
 
 enum algorithms_t {
@@ -37,6 +39,7 @@ enum algorithms_t {
     bm,
     trivial,
     rk,
+    trivial_mem,
     end
 };
 
