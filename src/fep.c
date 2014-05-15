@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -39,8 +40,19 @@ enum algorithms_t {
     end
 };
 
-static enum algorithms_t choose_best_by_analyzing(const char *text, const char *pattern,
-                                         const size_t text_len)
+static inline struct timespec get_time(void)
+{
+    struct timespec t = { 0, 0 };
+
+    clock_gettime(CLOCK_MONOTONIC, &t);
+
+    return t;
+}
+
+static enum algorithms_t choose_best_by_analyzing(const char *text,
+                                                  const char *pattern,
+                                                  const size_t text_len,
+                                                  double *time_taken)
 {
     /**
      * KMP: - Very bad when long pattern and match fails at the end.
@@ -56,6 +68,7 @@ static enum algorithms_t choose_best_by_analyzing(const char *text, const char *
      *
      */
 
+    struct timespec start_time = get_time();
     const size_t pattern_len = strlen(pattern);
 
     /* If text is quite short, it is fastest
@@ -70,6 +83,8 @@ static enum algorithms_t choose_best_by_analyzing(const char *text, const char *
         return bm;
     }
 
+    *time_taken = CALC_DIFF_MS(start_time, get_time());
+
     return rk;
 }
 
@@ -79,9 +94,11 @@ static enum algorithms_t choose_best_by_analyzing(const char *text, const char *
  * suffer. Then again, if sampling size is large, we won't get any use of doing this.
  */
 static enum algorithms_t choose_best_by_sampling(const char *text,
-                                                const char *pattern,
-                                                const size_t text_len)
+                                                 const char *pattern,
+                                                 const size_t text_len,
+                                                 double *time_taken)
 {
+    struct timespec start_time = get_time();
     const size_t pattern_len = strlen(pattern);
     const size_t sample_size = text_len / 4;
 
@@ -94,19 +111,11 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     enum algorithms_t fastest_func = end;
 
     for (enum algorithms_t a = kmp; a != end; a++) {
-        struct timespec t_start = { 0, 0 };
-        struct timespec t_end = { 0, 0 };
-
-        clock_gettime(CLOCK_MONOTONIC, &t_start);
+        struct timespec t_start = get_time();
 
         algorithms[a].func(text, pattern, sample_size);
 
-        clock_gettime(CLOCK_MONOTONIC, &t_end);
-
-        double run_time = CALC_DIFF_MS(t_start, t_end);
-
-        printf("%s: %s took %5.2lf ms\n", __func__, algorithms[a].name,
-               run_time);
+        double run_time = CALC_DIFF_MS(t_start, get_time());
 
         if (fastest_func == end || run_time < fastest_time) {
             fastest_time = run_time;
@@ -114,24 +123,67 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
         }
     }
 
-    printf("%s chose %s\n", __func__, (fastest_func != end ? algorithms[fastest_func].name :
-                                       "none"));
+    *time_taken = CALC_DIFF_MS(start_time, get_time());
 
     return fastest_func;
 }
 
-static inline struct timespec calc_time(void)
+/**
+ * Read file to memory with mmap.
+ *
+ * @return memory location returned by mmap and file size in @param filesize.
+ */
+static const char *read_file_to_mem(const char *filename, size_t *filesize)
 {
-    struct timespec t = { 0, 0 };
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+        fprintf(stderr, "open for %s failed: %s\n", filename, strerror(fd));
+        exit(EXIT_FAILURE);
+    }
 
-    clock_gettime(CLOCK_MONOTONIC, &t);
+    struct stat filestat;
+    int ret = fstat(fd, &filestat);
+    if (ret < 0) {
+        fprintf(stderr, "fstat for %s failed: %s\n", filename, strerror(fd));
+        exit(EXIT_FAILURE);
+    }
 
-    return t;
+    const char *file = mmap(NULL, filestat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (file == MAP_FAILED) {
+        fprintf(stderr, "mmap for %s failed: %s\n", filename, strerror(fd));
+        exit(EXIT_FAILURE);
+    }
+
+    if (filesize != NULL) {
+        *filesize = (size_t)filestat.st_size;
+    }
+
+    return file;
+}
+
+/**
+ * Search pattern from text using all algorithms defined in algorithms array.
+ *
+ * @note There should be enough space in @param execution_times.
+ *
+ * @return execution times of each algorithm in @param execution_times.
+ */
+static void find_pattern(const char *text, const size_t text_len,
+                         const char *pattern, double execution_times[])
+{
+    for (enum algorithms_t a = kmp; a != end; a++) {
+        struct timespec time_start = get_time();
+
+        algorithms[a].func(text, pattern, text_len);
+
+        struct timespec time_end = get_time();
+
+        execution_times[a] = CALC_DIFF_MS(time_start, time_end);
+    }
 }
 
 int main(int argc, const char *argv[])
 {
-    int ret;
     const char *pattern;
 
     if (argc != 3) {
@@ -142,46 +194,21 @@ int main(int argc, const char *argv[])
 
     pattern = argv[1];
 
-    int fd = open(argv[2], O_RDONLY);
-    if (fd < 0) {
-        fprintf(stderr, "open for %s failed: %s\n", argv[2], strerror(fd));
-        return 1;
-    }
+    size_t text_size;
+    const char *text = read_file_to_mem(argv[2], &text_size);
 
-    struct stat statbuf;
-    ret = fstat(fd, &statbuf);
-    if (ret < 0) {
-        fprintf(stderr, "fstat for %s failed: %s\n", argv[2], strerror(fd));
-        return 1;
-    }
-
-    size_t text_size = (size_t)statbuf.st_size;
-
-    const char *text = mmap(NULL, text_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    if (text == MAP_FAILED) {
-        fprintf(stderr, "mmap for %s failed: %s\n", argv[2], strerror(fd));
-        return 1;
-    }
-
-    struct timespec sampling_start = calc_time();
-    enum algorithms_t best_by_sampling = choose_best_by_sampling(text, pattern, text_size);
-    struct timespec sampling_end = calc_time();
-
-    struct timespec analyzing_start = calc_time();
-    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(text, pattern, text_size);
-    struct timespec analyzing_end = calc_time();
-
+    double sampling_time;
+    enum algorithms_t best_by_sampling = choose_best_by_sampling(text, pattern,
+                                                                 text_size,
+                                                                 &sampling_time);
+    double analyzing_time;
+    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(text,
+                                                                   pattern,
+                                                                   text_size,
+                                                                   &analyzing_time);
 
     double execution_times[ARRAY_LEN(algorithms)];
-    for (enum algorithms_t a = kmp; a != end; a++) {
-        struct timespec time_start = calc_time();
-
-        ret = algorithms[a].func(text, pattern, text_size);
-
-        struct timespec time_end = calc_time();
-
-        execution_times[a] = CALC_DIFF_MS(time_start, time_end);
-    }
+    find_pattern(text, text_size, pattern, execution_times);
 
     /* Report */
     enum algorithms_t fastest = end;
@@ -202,11 +229,11 @@ int main(int argc, const char *argv[])
     double diff = execution_times[best_by_sampling]
         - execution_times[fastest];
 
-    double total = diff + CALC_DIFF_MS(sampling_start, sampling_end);
+    double total = diff + sampling_time;
     printf("** Difference between fastest algorithm and algorithm chosen"
            " by sampling was:\n"
            "   %+.2lf ms + %.2lf ms (time took by sampling per algorithm) = %+.2lf ms\n",
-           diff, CALC_DIFF_MS(sampling_start, sampling_end) / ARRAY_LEN(algorithms), total);
+           diff, sampling_time, total);
 
     /* Couple of millisecond difference should be acceptable */
     /* TODO: This comparison is not very fair because it is affected by how many
@@ -222,11 +249,11 @@ int main(int argc, const char *argv[])
     diff = execution_times[best_by_analyzing]
         - execution_times[fastest];
 
-    total = diff + CALC_DIFF_MS(analyzing_start, analyzing_end);
+    total = diff + analyzing_time;
     printf("** Difference between fastest algorithm and algorithm chosen"
            " by analyzing was:\n"
            "   %+.2lf ms + %.2lf ms (time took by analyzing) = %+.2lf ms\n",
-           diff, CALC_DIFF_MS(analyzing_start, analyzing_end), total);
+           diff, analyzing_time, total);
 
     /* Couple millisecond difference should be acceptable */
     if (total > 3.0) {
