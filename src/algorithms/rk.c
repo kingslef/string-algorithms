@@ -13,7 +13,8 @@
  *
  * @note Based on the pseudocode in T-106.5400 Course notes 2012.
  *
- * @return number of occurances of pattern in text.
+ * @return number of occurances of pattern in text or zero if pattern_len is too
+ * long for constant values.
  */
 uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
 {
@@ -37,6 +38,13 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
     /* Other than this we don't need any casts to long because pattern times
        theta plus a character cannot be greater than 32bit unsigned integer */
     const uint32_t cm = ((unsigned long)pow(theta, pattern_len - 1)) % q;
+
+    if (cm == 0) {
+        /* theta ^ pattern_len probably overflowed, so pattern_len is too
+         * long */
+        printf("rk: too long pattern!\n");
+        return 0;
+    }
 
     uint32_t hash_pattern = 0;
     uint32_t hash_text = 0;

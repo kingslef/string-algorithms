@@ -101,14 +101,14 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
 
     *time_taken = CALC_DIFF_MS(start_time, get_time());
 
-    return rk;
+    return trivial;
 }
 
 /**
  * Try to choose best algorithm by sampling.
  *
- * Runs all algorithms (except trivial_mem) on part of the text and returns
- * fastest.
+ * Runs all algorithms (except trivial_mem or rk since it doesn't work on long
+ * patterns) on part of the text and returns fastest.
  *
  * It doesn't make sense to do this if the sampling size is small, since
  * algorithms with something to precompute will suffer. Then again, if sampling
@@ -136,7 +136,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     double fastest_time = 0.0;
     enum algorithms_t fastest_func = end;
 
-    for (enum algorithms_t a = kmp; a != trivial_mem; a++) {
+    for (enum algorithms_t a = kmp; a != rk; a++) {
         struct timespec t_start = get_time();
 
         algorithms[a].func(text, pattern, sample_size);
@@ -245,9 +245,9 @@ int main(int argc, const char *argv[])
     double execution_times[ARRAY_LEN(algorithms)];
     find_pattern(text, text_size, pattern, execution_times);
 
-    /* Find fastest algorithm. Report trivial_mem but don't count it as
+    /* Find fastest algorithm. Report trivial_mem and rk but don't count them as
      * fastest. */
-    /* TODO: describe that it is not counted in README */
+    /* TODO: describe that they are not counted in README */
     enum algorithms_t fastest = end;
     for (enum algorithms_t a = kmp; a != end; a++) {
         printf("%-10s %5.2lf ms\n"
@@ -257,8 +257,13 @@ int main(int argc, const char *argv[])
                execution_times[a] - execution_times[best_by_sampling],
                execution_times[a] - execution_times[best_by_analyzing]);
 
-        if (a != trivial_mem && (fastest == end
-                                 || execution_times[a] < execution_times[fastest])) {
+        /* Skip rk and trivial_mem */
+        if (a == rk || a == trivial_mem) {
+            continue;
+        }
+
+        if (fastest == end
+            || execution_times[a] < execution_times[fastest]) {
             fastest = a;
         }
     }
