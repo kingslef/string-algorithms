@@ -49,7 +49,7 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
         && strncmp(pattern, text, pattern_len) == 0) {
         /* Match */
         matched++;
-        printf("rk: match at %u\n", 0);
+        printf("rk: match at %u", 0);
     }
 
     /* Calculate rolling hash from rest of the text and compare it to
@@ -68,8 +68,18 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
             && strncmp(pattern, text + i, pattern_len) == 0) {
             /* Match */
             matched++;
-            printf("rk: match at %u\n", i);
+            if (matched == 1) {
+                printf("rk: match at %u", i);
+            } else {
+                printf(", %u", i);
+            }
         }
+    }
+
+    if (matched == 0) {
+        printf("rk: no matches\n");
+    } else {
+        putchar('\n');
     }
 
     return matched;

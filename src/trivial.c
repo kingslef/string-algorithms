@@ -26,8 +26,18 @@ uint32_t trivial_match(const char *text, const char *pattern,
         if (pattern[p] == '\0') {
             /* Match */
             matched++;
-            printf("trivial: match at %u\n", t);
+            if (matched == 1) {
+                printf("trivial: match at %u", t);
+            } else {
+                printf(", %u", t);
+            }
         }
+    }
+
+    if (matched == 0) {
+        printf("trivial: no matches\n");
+    } else {
+        putchar('\n');
     }
 
     return matched;

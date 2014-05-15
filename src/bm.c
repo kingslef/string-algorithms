@@ -229,8 +229,12 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
         while (text[i] == pattern[j]) {
             if (j == 0) {
                 /* Match */
-                printf("bm: match at %u\n", i);
                 matched++;
+                if (matched == 1) {
+                    printf("bm: match at %u", i);
+                } else {
+                    printf(", %u", i);
+                }
                 break;
             }
 
@@ -249,6 +253,12 @@ uint32_t bm_match(const char *text, const char *pattern, const size_t text_len)
               bad_char[(int)text[i]] - matched_chars, (unsigned int)text[i], good_suffix[j+1]);
         i = start + MAX((int)bad_char[text[i]] - (int)matched_chars, good_suffix[j+1]);
         j = pattern_len - 1;
+    }
+
+    if (matched == 0) {
+        printf("bm: no matches\n");
+    } else {
+        putchar('\n');
     }
 
     return matched;

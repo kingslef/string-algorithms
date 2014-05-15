@@ -59,7 +59,11 @@ uint32_t kmp_match(const char *text, const char *pattern,
             if (i == pattern_len) {
                 /* Match */
                 matched++;
-                printf("kmp: match at %u\n", match);
+                if (matched == 1) {
+                    printf("kmp: match at %u", match);
+                } else {
+                    printf(", %u", match);
+                }
             }
         } else {
             match = match + i - border[i];
@@ -69,6 +73,12 @@ uint32_t kmp_match(const char *text, const char *pattern,
                 i = 0;
             }
         }
+    }
+
+    if (matched == 0) {
+        printf("kmp: no matches\n");
+    } else {
+        putchar('\n');
     }
 
     return matched;
