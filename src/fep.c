@@ -58,14 +58,19 @@ static enum algorithms_t choose_best_by_analyzing(const char *text, const char *
 
     const size_t pattern_len = strlen(pattern);
 
-    /* If pattern and text are quite small, it is fastest
+    /* If text is quite short, it is fastest
        use trivial algorithm */
-    if (pattern_len <= 20 && text_len <= 800) {
+    if (text_len <= 10000) {
         return trivial;
     }
 
+    /* If pattern is very short but text is large,
+       bm should be fastest */
+    if (pattern_len <= 5 && text_len >= 10000) {
+        return bm;
+    }
 
-    return 1;
+    return rk;
 }
 
 /**
