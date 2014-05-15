@@ -19,7 +19,6 @@
 #define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 
-
 static uint32_t (*match_funcs[])(const char*,
                                  const char*,
                                  const size_t) = { kmp_match, bm_match,
@@ -94,6 +93,15 @@ static int choose_best_by_sampling(const char *text, const char *pattern, const 
     return fastest_func;
 }
 
+static inline struct timespec calc_time(void)
+{
+    struct timespec t = { 0, 0 };
+
+    clock_gettime(CLOCK_MONOTONIC, &t);
+
+    return t;
+}
+
 int main(int argc, const char *argv[])
 {
     int ret;
@@ -128,27 +136,48 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
+    struct timespec sampling_start = calc_time();
+
     uint32_t best_by_sampling = choose_best_by_sampling(text, pattern, text_size);
+
+    struct timespec sampling_end = calc_time();
 
     double execution_times[ARRAY_LEN(match_funcs)];
     for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
-        struct timespec t_start = { 0, 0 };
-        struct timespec t_end = { 0, 0 };
-
-        clock_gettime(CLOCK_MONOTONIC, &t_start);
+        struct timespec time_start = calc_time();
 
         ret = match_funcs[i](text, pattern, text_size);
 
-        clock_gettime(CLOCK_MONOTONIC, &t_end);
+        struct timespec time_end = calc_time();
 
-        execution_times[i] = CALC_DIFF_MS(t_start, t_end);
+        execution_times[i] = CALC_DIFF_MS(time_start, time_end);
     }
 
     /* Report */
+    int fastest_func = -1;
     for (uint32_t i = 0; i < ARRAY_LEN(match_funcs); i++) {
         printf("%10s: took %5.2lf ms (%+5.2lf ms to best by sampling)\n",
                match_func_names[i], execution_times[i],
                execution_times[i] - execution_times[best_by_sampling]);
+        if (fastest_func == -1
+            || execution_times[i] < execution_times[fastest_func]) {
+            fastest_func = i;
+        }
+    }
+
+    double diff = execution_times[best_by_sampling]
+        - execution_times[fastest_func];
+
+    double total = diff + CALC_DIFF_MS(sampling_start, sampling_end);
+    printf("** Difference between fastest algorithm and algorithm chosen"
+           " by sampling was:\n"
+           "   %+.2lf ms + %.2lf ms (time took by sampling) = %+.2lf ms\n",
+           diff, CALC_DIFF_MS(sampling_start, sampling_end), total);
+
+    if (diff > 0.0) {
+        printf(" => Not worth it\n");
+    } else {
+        printf(" => Worth it\n");
     }
 
     return 0;
