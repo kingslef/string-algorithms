@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
-int kmp_build_border(const char *pattern, int *border,
+int kmp_build_border(const char *pattern, uint32_t *border,
                      const size_t pattern_len)
 {
-    if (border == NULL || pattern == NULL) {
+    if (border == NULL || pattern == NULL || border == NULL) {
         return -1;
     }
 
@@ -34,6 +34,14 @@ int kmp_build_border(const char *pattern, int *border,
     return 0;
 }
 
+/**
+ * Find occurances of pattern in text using Knuth-Morris-Pratt algorithm.
+ *
+ * @note Based on pseudocode in Graham A. Stephen, String searching algorithms,
+ * except that it didn't quite support multiple matches.
+ *
+ * @return number of occurances of pattern in text.
+ */
 uint32_t kmp_match(const char *text, const char *pattern,
                    const size_t text_len)
 {
@@ -43,35 +51,37 @@ uint32_t kmp_match(const char *text, const char *pattern,
 
     const size_t pattern_len = strlen(pattern);
 
-    int border[pattern_len + 1];
+    if (pattern_len == 0) {
+        return 0;
+    }
 
-    kmp_build_border(pattern, &(border[1]), pattern_len);
+    uint32_t border[pattern_len];
 
-    border[0] = -1;
+    kmp_build_border(pattern, border, pattern_len);
 
     uint32_t i = 0;
-    uint32_t match = 0;
+    uint32_t j = 0;
 
     uint32_t matched = 0;
-    while (match + i < text_len) {
-        if (pattern[i] == text[match + i]) {
-            i++;
-            if (i == pattern_len) {
-                /* Match */
-                matched++;
-                if (matched == 1) {
-                    printf("kmp: match at %u", match);
-                } else {
-                    printf(", %u", match);
-                }
+    while (i < text_len && j < pattern_len) {
+        while (text[i] != pattern[j]) {
+            if (j == 0) {
+                break;
             }
-        } else {
-            match = match + i - border[i];
-            if (border[i] >= 0) {
-                i = (uint32_t)border[i];
+            j = border[j - 1];
+        }
+        i++;
+        j++;
+        if (j == pattern_len) {
+            /* Match */
+            matched++;
+            uint32_t match_pos = i - pattern_len;
+            if (matched == 1) {
+                printf("kmp: match at %u", match_pos);
             } else {
-                i = 0;
+                printf(", %u", match_pos);
             }
+            j = border[j - 1];
         }
     }
 

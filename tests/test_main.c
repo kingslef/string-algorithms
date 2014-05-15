@@ -26,6 +26,8 @@ static const char *test_match_negative(uint32_t (*match_func)(const char*,
                     match_func(NULL, NULL, 0), 0);
     mu_assert_equal("unexisting pattern was found",
                     match_func(NULL, "foo", 0), 0);
+    mu_assert_equal("unexisting pattern was found",
+                    match_func("foooob", "fooooo", 3), 0);
 
     return NULL;
 }
@@ -77,10 +79,10 @@ static const char *test_match_positive(uint32_t (*match_func)(const char*,
 }
 
 static const char *kmp_border_test(const char *test_string,
-                                   const int32_t correct_border[])
+                                   const uint32_t correct_border[])
 {
     const size_t string_len = strlen(test_string);
-    int border[string_len];
+    uint32_t border[string_len];
 
     memset(border, 0, sizeof(border));
 
@@ -134,8 +136,7 @@ static const char *bm_bad_char_test(const char *pattern, const char *indexes,
         values++;
     }
 
-    mu_assert_equal("bad char array creation failed",
-                    bm_build_bad_char(pattern, bad_char, pattern_len), 0);
+    bm_build_bad_char(pattern, bad_char, pattern_len);
 
     mu_assert_equal_array("wrong bad char rule array created",
                           bad_char,
@@ -192,17 +193,17 @@ static const char *all_tests(void)
 
     /* KMP border array tests */
     mu_run_test(kmp_border_test("ABCDABD",
-                                (const int32_t []){0, 0, 0, 0, 1, 2, 0}));
+                                (const uint32_t []){0, 0, 0, 0, 1, 2, 0}));
     mu_run_test(kmp_border_test("ALABARALAALABARDA",
-                                (const int32_t []){0, 0, 1, 0, 1, 0, 1, 2, 3, 1,
+                                (const uint32_t []){0, 0, 1, 0, 1, 0, 1, 2, 3, 1,
                                         2, 3, 4, 5, 6, 0, 1}));
     mu_run_test(kmp_border_test("TIPETIPETAP",
-                                (const int32_t []){0, 0, 0, 0, 1, 2, 3, 4, 5, 0,
+                                (const uint32_t []){0, 0, 0, 0, 1, 2, 3, 4, 5, 0,
                                         0}));
     mu_run_test(kmp_border_test("ONEONETWO",
-                                (const int32_t []){0, 0, 0, 1, 2, 3, 0, 0, 1}));
+                                (const uint32_t []){0, 0, 0, 1, 2, 3, 0, 0, 1}));
     mu_run_test(kmp_border_test("PARTICIPATE IN PARACHUTE",
-                                (const int32_t []){0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
+                                (const uint32_t []){0, 0, 0, 0, 0, 0, 0, 1, 2, 0,
                                         0, 0, 0, 0, 0, 1, 2, 3, 0, 0, 0, 0, 0,
                                         0}));
 
