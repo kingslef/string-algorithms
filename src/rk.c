@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* Prime number used in hashing in Rabin-Karp */
+#define PRIME 33554393
+
 /**
  * Find occurances of pattern in text using Rabin-Karp algorithm.
  *
@@ -20,7 +23,6 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
 
     uint32_t pattern_len = strlen(pattern);
 
-    /* TODO: remove len checks */
     if (pattern_len > text_len || pattern_len == 0 || text_len == 0) {
         return 0;
     }
@@ -29,11 +31,12 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
         return (pattern[0] == text[0] ? 1 : 0);
     }
 
-    uint32_t theta = 32;
-    uint32_t q = (uint32_t)pow(2, 32);
+    const uint32_t theta = 32;
+    const uint32_t q = PRIME;
 
-    /* TODO: remove pow */
-    uint32_t cm = (uint32_t)pow(theta, pattern_len - 1) % q;
+    /* Other than this we don't need any casts to long because pattern times
+       theta plus a character cannot be greater than 32bit unsigned integer */
+    const uint32_t cm = ((unsigned long)pow(theta, pattern_len - 1)) % q;
 
     uint32_t hash_pattern = 0;
     uint32_t hash_text = 0;
@@ -66,8 +69,7 @@ uint32_t rk_match(const char *text, const char *pattern, const size_t text_len)
            - Subtract previous character times cm,
            - Multiply that by theta,
            - Add new character from the text,
-           - All in mod q.
-        */
+           - All in mod q. */
         hash_text = ((hash_text - text[i - 1] * cm) * theta + text[i + pattern_len - 1]) % q;
 
         if (hash_pattern == hash_text
