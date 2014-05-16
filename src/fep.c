@@ -23,10 +23,6 @@
 #define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
 
-/* Couple of millisecond difference should be acceptable when comparing running
- * times of algorithms */
-#define ACCEPTABLE_DIFFERENCE 3.0
-
 typedef struct {
     const char *name;
     uint32_t (*func)(const char *, const char *, const size_t);
@@ -61,59 +57,6 @@ static inline struct timespec get_time(void)
     return t;
 }
 
-
-/**
- * Try to choose best algorithm by analyzing the length of the pattern and text.
- *
- * By running all algorithms with few texts and patterns, I decided to try this
- * kind of approach for choosing the best algorithm.
- *
- * @return fastest algorithm chosen by looking at the lengths and total time
- * taken by analyzing in @param time_taken.
- */
-static enum algorithms_t choose_best_by_analyzing(const char *pattern,
-                                                  const size_t text_len,
-                                                  double *time_taken)
-{
-    /**
-     * KMP: - Very bad when long pattern and match fails at the end.
-     *      - Good when not much partial matches in text (better than BM).
-     *
-     * BM:  - Good when long pattern.
-     *      - Good when pattern is not in the text.
-     *      - Bad with very small (3 char) pattern and 6 char text.
-     *
-     * T:   - Good with ~20 char pattern and 100 lines.
-     *
-     * RK:  - Doesn't seem to be affected by much, it is always a bit slower than trivial.
-     *
-     */
-
-    struct timespec start_time = get_time();
-    const size_t pattern_len = strlen(pattern);
-
-    /* If any of these doesn't match, use trivial */
-    enum algorithms_t algorithm = trivial;
-
-    if (text_len <= 10000) {
-        /* If text is quite short, it is fastest
-           use trivial algorithm */
-        algorithm = trivial;
-    } else if (pattern_len <= 200 && text_len >= 10000) {
-        /* If pattern is not too long but text is large, bm should be fastest,
-           except that when the pattern is not there */
-        algorithm = bm;
-    } else if (pattern_len >= 1000) {
-        /* If the pattern is long, our good suffix building in BM becomes too
-         * slow, so KMP will win. */
-        algorithm = kmp;
-    }
-
-    *time_taken = CALC_DIFF_MS(start_time, get_time());
-
-    return algorithm;
-}
-
 /**
  * Try to choose best algorithm by sampling.
  *
@@ -143,7 +86,6 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
         return trivial;
     }
 
-    size_t sample_pattern_len = MAX(max_sample_pattern_len, pattern_len);
     const char *sample_pattern;
     char sample_pattern_buf[max_sample_pattern_len + 1];
 
@@ -259,10 +201,6 @@ int main(int argc, const char *argv[])
     enum algorithms_t best_by_sampling = choose_best_by_sampling(text, pattern,
                                                                  text_size,
                                                                  &sampling_time);
-    double analyzing_time;
-    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(pattern,
-                                                                   text_size,
-                                                                   &analyzing_time);
 
     double execution_times[ARRAY_LEN(algorithms)];
     find_pattern(text, text_size, pattern, execution_times);
@@ -273,11 +211,9 @@ int main(int argc, const char *argv[])
     enum algorithms_t fastest = end;
     for (enum algorithms_t a = kmp; a != end; a++) {
         printf("%-10s %5.2lf ms\n"
-               "\t(%+5.2lf ms to sampling)\n"
-               "\t(%+5.2lf ms to analyzing)\n\n",
+               "\t(%+5.2lf ms to sampling)\n\n",
                algorithms[a].name, execution_times[a],
-               execution_times[a] - execution_times[best_by_sampling],
-               execution_times[a] - execution_times[best_by_analyzing]);
+               execution_times[a] - execution_times[best_by_sampling]);
 
         /* Skip rk and trivial_mem */
         if (a == rk || a == trivial_mem) {
@@ -319,23 +255,6 @@ int main(int argc, const char *argv[])
         printf(" Still faster than second fastest => Worth it\n\n");
     } else {
         printf(" => Not worth it\n\n");
-    }
-
-    diff = execution_times[best_by_analyzing]
-        - execution_times[fastest];
-
-    total = diff + analyzing_time;
-    printf("** Difference between fastest algorithm (%s) and algorithm chosen"
-           " by analyzing (%s) was:\n"
-           "   %+.2lf ms + %.2lf ms (time took by analyzing) = %+.2lf ms\n",
-           algorithms[fastest].name, algorithms[best_by_analyzing].name,
-           diff, analyzing_time, total);
-
-    /* Couple millisecond difference should be acceptable */
-    if (total > ACCEPTABLE_DIFFERENCE) {
-        printf(" => Not worth it\n");
-    } else {
-        printf(" => Worth it\n");
     }
 
     printf("\nText length was %zu and pattern length was %zu characters\n",
