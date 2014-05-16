@@ -4,8 +4,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/**
+ * Build border array.
+ *
+ * @note Based on the pseudocode in T-106.5400 Course notes 2012.
+ *
+ * @return border array in @param border.
+ */
 void kmp_build_border(const char *pattern, uint32_t *border,
-                     const size_t pattern_len)
+                      const size_t pattern_len)
 {
     if (pattern_len > 0) {
         border[0] = 0;
