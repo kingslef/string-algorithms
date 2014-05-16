@@ -290,6 +290,21 @@ int main(int argc, const char *argv[])
         }
     }
 
+    /* Find also second fastest algorithm. */
+    enum algorithms_t second_fastest = end;
+    for (enum algorithms_t a = kmp; a != end; a++) {
+
+        /* Skip rk and trivial_mem */
+        if (a == rk || a == trivial_mem || a == fastest) {
+            continue;
+        }
+
+        if (second_fastest == end
+            || execution_times[a] < execution_times[second_fastest]) {
+            second_fastest = a;
+        }
+    }
+
     double diff = execution_times[best_by_sampling]
         - execution_times[fastest];
 
@@ -300,10 +315,10 @@ int main(int argc, const char *argv[])
            algorithms[fastest].name, algorithms[best_by_sampling].name,
            diff, sampling_time, total);
 
-    if (total > ACCEPTABLE_DIFFERENCE) {
-        printf(" => Not worth it\n\n");
+    if (total < execution_times[second_fastest]) {
+        printf(" Still faster than second fastest => Worth it\n\n");
     } else {
-        printf(" => Worth it\n\n");
+        printf(" => Not worth it\n\n");
     }
 
     diff = execution_times[best_by_analyzing]
