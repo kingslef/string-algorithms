@@ -76,29 +76,28 @@ void bm_build_good_suffix(const char *pattern, int *good_suffix,
     for (uint32_t i = 0; i < pattern_len; i++) {
         uint32_t j = 0;
 
-        int ret = 0;
-        while (j != pattern_len) {
+        while (j < pattern_len) {
             if (j == 0 && i == 0) {
                 j++;
             }
 
-            ret = strncmp(pattern, pattern + i + j, pattern_len - i - j);
+            int ret = strncmp(pattern, pattern + i + j, pattern_len - i - j);
             if (ret == 0) {
+                /* Found */
                 if (good_suffix[i] == 0) {
                     good_suffix[i] = i + j;
                 }
                 break;
-            } else {
             }
+
             j++;
-        }
-
-        if (ret) {
-            if (good_suffix[i] == 0) {
-                good_suffix[i] = pattern_len;
+            if (j == pattern_len) {
+                /* Not found */
+                if (good_suffix[i] == 0) {
+                    good_suffix[i] = pattern_len;
+                }
             }
         }
-
     }
 }
 
