@@ -176,35 +176,73 @@ with iso8859 or utf8 and this application only supports ascii, they have to be c
 
 ``` sh
 ~/string-algorithms/build> wget -qO - http://www.gutenberg.org/files/45641/45641-8.txt | iconv -f iso8859-1 -t ASCII//TRANSLIT > text.txt
+~/string-algorithms/build> ./fep "Project Gutenberg" text.txt
+Sampling..
+kmp: match at 4, 246
+bm: match at 4, 246
+trivial: match at 4, 246
+Sampling done.
+kmp: match at 4, 246, 226360, 227168, 227576, 227661, 227981, 228320, 228556, 228849, 228928, 229473, 229645, 229736, 230614, 230730, 230807, 230865, 231193, 231304, 231658, 231854, 231957, 232230, 232416, 232547, 233109, 233250, 233565, 233736, 233910, 234051, 234207, 234317, 234606, 234739, 234977, 235198, 235558, 235641, 235808, 235890, 235999, 236171, 236229, 239208, 239364, 239601, 239693, 239801, 239825, 240244, 240296, 240502, 240572, 240782, 240836, 241148, 241881, 241931, 243364, 243644, 243739, 243970, 244381, 244443
+bm: match at 4, 246, 226360, 227168, 227576, 227661, 227981, 228320, 228556, 228849, 228928, 229473, 229645, 229736, 230614, 230730, 230807, 230865, 231193, 231304, 231658, 231854, 231957, 232230, 232416, 232547, 233109, 233250, 233565, 233736, 233910, 234051, 234207, 234317, 234606, 234739, 234977, 235198, 235558, 235641, 235808, 235890, 235999, 236171, 236229, 239208, 239364, 239601, 239693, 239801, 239825, 240244, 240296, 240502, 240572, 240782, 240836, 241148, 241881, 241931, 243364, 243644, 243739, 243970, 244381, 244443
+trivial: match at 4, 246, 226360, 227168, 227576, 227661, 227981, 228320, 228556, 228849, 228928, 229473, 229645, 229736, 230614, 230730, 230807, 230865, 231193, 231304, 231658, 231854, 231957, 232230, 232416, 232547, 233109, 233250, 233565, 233736, 233910, 234051, 234207, 234317, 234606, 234739, 234977, 235198, 235558, 235641, 235808, 235890, 235999, 236171, 236229, 239208, 239364, 239601, 239693, 239801, 239825, 240244, 240296, 240502, 240572, 240782, 240836, 241148, 241881, 241931, 243364, 243644, 243739, 243970, 244381, 244443
+rk: too long pattern!
+trivial_mem: match at 4, 246, 226360, 227168, 227576, 227661, 227981, 228320, 228556, 228849, 228928, 229473, 229645, 229736, 230614, 230730, 230807, 230865, 231193, 231304, 231658, 231854, 231957, 232230, 232416, 232547, 233109, 233250, 233565, 233736, 233910, 234051, 234207, 234317, 234606, 234739, 234977, 235198, 235558, 235641, 235808, 235890, 235999, 236171, 236229, 239208, 239364, 239601, 239693, 239801, 239825, 240244, 240296, 240502, 240572, 240782, 240836, 241148, 241881, 241931, 243364, 243644, 243739, 243970, 244381, 244443
+
+Run times:
+kmp         3.15 ms
+        (+2.87 ms to sampling)
+
+bm          0.28 ms
+        (+0.00 ms to sampling)
+
+trivial     1.86 ms
+        (+1.57 ms to sampling)
+
+rk          0.02 ms
+        (-0.27 ms to sampling)
+
+trivial_mem  0.53 ms
+        (+0.24 ms to sampling)
+
+
+Sampling chose the best algorithm
+ Still faster than second fastest => Worth it
+
+Text length was 244600 and pattern length was 17 characters
+```
+
+Still sampling seems to fail, so sample sizes would require some fine tuning:
+``` sh
 ~/string-algorithms/build> ./fep "Information about the Project Gutenberg" text.txt
+Sampling..
 kmp: no matches
 bm: no matches
 trivial: no matches
+Sampling done.
 kmp: match at 240760
 bm: match at 240760
 trivial: match at 240760
 rk: too long pattern!
 trivial_mem: match at 240760
 
-running times:
-kmp         4.22 ms
-        (+1.34 ms to sampling)
+Run times:
+kmp         2.98 ms
+        (+1.09 ms to sampling)
 
-bm          0.26 ms
-        (-2.62 ms to sampling)
+bm          0.24 ms
+        (-1.64 ms to sampling)
 
-trivial     2.89 ms
+trivial     1.89 ms
         (+0.00 ms to sampling)
 
-rk          0.02 ms
-        (-2.87 ms to sampling)
+rk          0.01 ms
+        (-1.87 ms to sampling)
 
 trivial_mem  0.07 ms
-        (-2.81 ms to sampling)
+        (-1.82 ms to sampling)
 
-** Difference between fastest algorithm (bm) and algorithm chosen by sampling (trivial) was:
-   +2.62 ms + 0.15 ms (time took by sampling per algorithm) = +2.77 ms
- Still faster than second fastest => Worth it
+** Algorithm chosen by sampling (bm) compared to the fastest algorithm (trivial) was:
+   +1.64 ms + 0.09 ms (time took by sampling per algorithm) = +1.73 ms slower
 
 Text length was 244600 and pattern length was 39 characters
 ```
