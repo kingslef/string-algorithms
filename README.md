@@ -1,7 +1,11 @@
 string-algorithms
 =================
 
-Implementation of string matching algorithms.
+This is a project for T-106.5400 String Algorithms course in spring 2014. The
+main idea was to implement some of the well-known exact string pattern matching
+algorithms and study if we could pick the fastest algorithm by sampling the text
+and the pattern, i.e. choose run only part of the pattern through part of the
+text.
 
 Directory Structure
 -------------------
@@ -80,10 +84,30 @@ Known Issues
 
 RK overflows if the pattern is large, i.e. after 32 ^ pattern_len doesn't fit
 into unsigned long. This could have been improved by using better constants, but
-since I don't really have understanding of those, I left it like this.
+since I don't really have understanding of those, I left it like this. Due to
+this, only KMP, BM and trivial algorithms are taken into account in the
+sampling. Times of other algorithms are reported but in RKs case, it might be
+wrong.
 
 BM good suffix rule was very tricky to implement. My implementation can be
 improved a lot (by storing widest borders, fixing my strrnstr etc.). It became
 so complex that when I tried to improve it, it broke. There is still possibly
 some bugs with it.
+
+Sampling
+--------
+
+Sampling is quite straight-forward. Take a piece of the pattern and run it
+through only part of the text. I chose to use beginning of the text and the
+pattern because without any analyzing, it is quite indifferent what part is
+used. Then KMP, BM, and trivial are run with the same text and pattern.
+
+Only difficulty was choosing the right values for sampling lengths. If pattern
+length would have been small, trivial would have gained most benefit from it,
+since it doesn't need to precompute anything. Also, by having too large text
+length, sampling could have taken too much time compared to actual matching.
+
+If the text is quite small (<10000 bytes in my testing), it doesn't matter which
+algorithm is used so sampling is not beneficial in that case. Only when using
+longer texts (>200000), actual sampling can be made.
 
