@@ -26,6 +26,8 @@ typedef struct {
     uint32_t (*func)(const char *, const char *, const size_t);
 } string_algorithm_t;
 
+
+/* String algorithms used by the program. */
 static string_algorithm_t algorithms[] = {
     { .name = "kmp", .func = kmp_match },
     { .name = "bm", .func = bm_match },
@@ -61,7 +63,7 @@ static inline struct timespec get_time(void)
  * kind of approach for choosing the best algorithm.
  *
  * @return fastest algorithm chosen by looking at the lengths and total time
- * taken by sampling in @param time_taken.
+ * taken by analyzing in @param time_taken.
  */
 static enum algorithms_t choose_best_by_analyzing(const char *text,
                                                   const char *pattern,
@@ -85,18 +87,21 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
     struct timespec start_time = get_time();
     const size_t pattern_len = strlen(pattern);
 
-    /* If text is quite short, it is fastest
-       use trivial algorithm */
-    if (text_len <= 10000) {
-        *time_taken = CALC_DIFF_MS(start_time, get_time());
-        return trivial;
-    }
+    /* If any of these doesn't match, use trivial */
+    enum algorithms_t algorithm = trivial;
 
-    /* If pattern is not too long but text is large,
-       bm should be fastest */
-    if (pattern_len <= 200 && text_len >= 10000) {
-        *time_taken = CALC_DIFF_MS(start_time, get_time());
-        return bm;
+    if (text_len <= 10000) {
+        /* If text is quite short, it is fastest
+           use trivial algorithm */
+        algorithm = trivial;
+    } else if (pattern_len <= 200 && text_len >= 10000) {
+        /* If pattern is not too long but text is large, bm should be fastest,
+           except that when the pattern is not there */
+        algorithm = bm;
+    } else if (pattern_len >= 1000) {
+        /* If the pattern is long, our good suffix building in BM becomes too
+         * slow, so KMP will win. */
+        algorithm = kmp;
     }
 
     *time_taken = CALC_DIFF_MS(start_time, get_time());
@@ -107,8 +112,8 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
 /**
  * Try to choose best algorithm by sampling.
  *
- * Runs all algorithms (except trivial_mem or rk since it doesn't work on long
- * patterns) on part of the text and returns fastest.
+ * Runs all algorithms (except trivial_mem (it would win always) or rk (it
+ * doesn't work on long patterns) on part of the text and returns fastest.
  *
  * It doesn't make sense to do this if the sampling size is small, since
  * algorithms with something to precompute will suffer. Then again, if sampling
