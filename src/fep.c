@@ -128,15 +128,19 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
                                                  double *time_taken)
 {
     struct timespec start_time = get_time();
-    /* TODO: don't run the whole pattern */
     const size_t pattern_len = strlen(pattern);
-    const size_t sample_size = text_len / 4;
 
+    const size_t sample_size = text_len / 4;
+    const size_t sample_pattern_len = pattern_len/ 4;
 
     if (sample_size < pattern_len * 2) {
         *time_taken = CALC_DIFF_MS(start_time, get_time());
         return trivial;
     }
+
+    char sample_pattern[sample_pattern_len + 1];
+    strncpy(sample_pattern, pattern, sample_pattern_len);
+    sample_pattern[sample_pattern_len] = '\0';
 
     double fastest_time = 0.0;
     enum algorithms_t fastest_func = end;
@@ -144,7 +148,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     for (enum algorithms_t a = kmp; a != rk; a++) {
         struct timespec t_start = get_time();
 
-        algorithms[a].func(text, pattern, sample_size);
+        algorithms[a].func(text, sample_pattern, sample_size);
 
         double run_time = CALC_DIFF_MS(t_start, get_time());
 
