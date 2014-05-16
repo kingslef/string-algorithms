@@ -34,6 +34,11 @@ char *strrnstr(const char *haystack, const char *needle, const size_t haystack_l
     return NULL;
 }
 
+/**
+ * Build good suffix table for pattern.
+ *
+ * @return good suffix table in @param good_suffix.
+ */
 void bm_build_good_suffix(const char *pattern, int *good_suffix,
                           const size_t pattern_len)
 {
@@ -105,7 +110,14 @@ void bm_build_good_suffix(const char *pattern, int *good_suffix,
 
 }
 
-/* Pseudocode from Graham A. Stephen: String Searching Algorithms */
+/**
+ * Build a bad character table for pattern.
+ *
+ * @note Based on a pseudocode from Graham A. Stephen: String Searching
+ * Algorithms.
+ *
+ * @return bad character table in @param bad_char.
+ */
 void bm_build_bad_char(const char *pattern, uint32_t *bad_char,
                        const size_t pattern_len)
 {
