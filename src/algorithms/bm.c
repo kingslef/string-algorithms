@@ -46,34 +46,28 @@ void bm_build_good_suffix(const char *pattern, int *good_suffix,
         const char *suffix_to_search = pattern + i + 1;
 
         uint32_t j = 0;
-        const char *suffix;
 
         /* Search suffix from the pattern, backwards */
         do {
-            suffix = strrnstr(pattern, suffix_to_search, pattern_len - j);
+            const char *suffix = strrnstr(pattern, suffix_to_search, pattern_len - j);
 
-            if (suffix && suffix[-1] == pattern[i]) {
-                suffix = NULL;
-            } else {
+            if (suffix && suffix[-1] != pattern[i]) {
                 /* Found */
+                good_suffix[i + 1] = (int)(suffix_to_search - suffix);
                 break;
             }
 
             j++;
-            if (j >= i) {
-                suffix = NULL;
+
+            if (j >= i || suffix == NULL) {
+                /* Not found */
+                good_suffix[i + 1] = 0;
                 break;
             }
         } while (1);
 
-        if (suffix) {
-            good_suffix[i + 1] = (int)(suffix_to_search - suffix);
-        } else {
-            good_suffix[i + 1] = 0;
-        }
-
         if (i == 0) {
-            good_suffix[i] = 0;
+            good_suffix[0] = 0;
             break;
         }
     }
