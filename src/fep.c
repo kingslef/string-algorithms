@@ -208,6 +208,7 @@ int main(int argc, const char *argv[])
     /* Find fastest algorithm. Report trivial_mem and rk but don't count them as
      * fastest. */
     /* TODO: describe that they are not counted in README */
+    printf("\nrunning times:\n");
     enum algorithms_t fastest = end;
     for (enum algorithms_t a = kmp; a != end; a++) {
         printf("%-10s %5.2lf ms\n"
@@ -252,9 +253,9 @@ int main(int argc, const char *argv[])
            diff, sampling_time, total);
 
     if (total < execution_times[second_fastest]) {
-        printf(" Still faster than second fastest => Worth it\n\n");
+        printf(" Still faster than second fastest => Worth it\n");
     } else {
-        printf(" => Not worth it\n\n");
+        printf(" => Not worth it\n");
     }
 
     printf("\nText length was %zu and pattern length was %zu characters\n",
