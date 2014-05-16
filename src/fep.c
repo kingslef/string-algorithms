@@ -16,10 +16,16 @@
 #include <time.h>
 #include <fcntl.h>
 
+#define MAX(x,y) ((x) > (y) ? (x) : (y))
+
 #define ARRAY_LEN(x) (sizeof(x) / sizeof(x)[0])
 
 #define CALC_DIFF_MS(start, end) (((end).tv_sec * 10e2 + (end).tv_nsec * 10e-7) - \
                                   ((start).tv_sec * 10e2 + (start).tv_nsec * 10e-7))
+
+/* Couple of millisecond difference should be acceptable when comparing running
+ * times of algorithms */
+#define ACCEPTABLE_DIFFERENCE 3.0
 
 typedef struct {
     const char *name;
@@ -129,25 +135,34 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     struct timespec start_time = get_time();
     const size_t pattern_len = strlen(pattern);
 
-    const size_t sample_size = text_len / 4;
-    const size_t sample_pattern_len = pattern_len/ 4;
+    const size_t max_sample_len = 2000;
+    const size_t max_sample_pattern_len = 200;
 
-    if (sample_size < pattern_len * 2) {
+    if (text_len < max_sample_len) {
         *time_taken = CALC_DIFF_MS(start_time, get_time());
         return trivial;
     }
 
-    char sample_pattern[sample_pattern_len + 1];
-    strncpy(sample_pattern, pattern, sample_pattern_len);
-    sample_pattern[sample_pattern_len] = '\0';
+    size_t sample_pattern_len = MAX(max_sample_pattern_len, pattern_len);
+    const char *sample_pattern;
+    char sample_pattern_buf[max_sample_pattern_len + 1];
+
+    if (max_sample_pattern_len < pattern_len) {
+        strncpy(sample_pattern_buf, pattern, max_sample_pattern_len);
+        sample_pattern_buf[max_sample_pattern_len] = '\0';
+        sample_pattern = sample_pattern_buf;
+    } else {
+        sample_pattern = pattern;
+    }
 
     double fastest_time = 0.0;
     enum algorithms_t fastest_func = end;
 
+    /* Only run kmp, bm and trivial */
     for (enum algorithms_t a = kmp; a != rk; a++) {
         struct timespec t_start = get_time();
 
-        algorithms[a].func(text, sample_pattern, sample_size);
+        algorithms[a].func(text, sample_pattern, max_sample_len);
 
         double run_time = CALC_DIFF_MS(t_start, get_time());
 
@@ -285,16 +300,11 @@ int main(int argc, const char *argv[])
            algorithms[fastest].name, algorithms[best_by_sampling].name,
            diff, sampling_time, total);
 
-    /* Couple of millisecond difference should be acceptable */
-    /* TODO: This comparison is not very fair because it is affected by how many
-     * algorithms we have */
-    if (total / ARRAY_LEN(algorithms) > 3.0) {
-        printf(" => Not worth it\n");
+    if (total > ACCEPTABLE_DIFFERENCE) {
+        printf(" => Not worth it\n\n");
     } else {
-        printf(" => Worth it\n");
+        printf(" => Worth it\n\n");
     }
-
-    putchar('\n');
 
     diff = execution_times[best_by_analyzing]
         - execution_times[fastest];
@@ -307,7 +317,7 @@ int main(int argc, const char *argv[])
            diff, analyzing_time, total);
 
     /* Couple millisecond difference should be acceptable */
-    if (total > 3.0) {
+    if (total > ACCEPTABLE_DIFFERENCE) {
         printf(" => Not worth it\n");
     } else {
         printf(" => Worth it\n");
