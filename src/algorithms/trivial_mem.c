@@ -24,7 +24,7 @@ uint32_t trivial_mem_match(const char *text, const char *pattern,
     size_t haystack_len = text_len;
     uint32_t matched = 0;
 
-    while (haystack - text < text_len) {
+    while ((uint32_t)(haystack - text) < text_len) {
         const char *match = memmem(haystack, haystack_len, pattern, pattern_len);
         if (match == NULL) {
             break;

@@ -10,7 +10,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wnested-externs")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wshadow -Wwrite-strings")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-aliasing=2 -Wunused-result")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wstrict-prototypes -Winline -Wundef")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wcast-qual")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-char-subscripts")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g")
 

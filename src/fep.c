@@ -65,8 +65,7 @@ static inline struct timespec get_time(void)
  * @return fastest algorithm chosen by looking at the lengths and total time
  * taken by analyzing in @param time_taken.
  */
-static enum algorithms_t choose_best_by_analyzing(const char *text,
-                                                  const char *pattern,
+static enum algorithms_t choose_best_by_analyzing(const char *pattern,
                                                   const size_t text_len,
                                                   double *time_taken)
 {
@@ -106,7 +105,7 @@ static enum algorithms_t choose_best_by_analyzing(const char *text,
 
     *time_taken = CALC_DIFF_MS(start_time, get_time());
 
-    return trivial;
+    return algorithm;
 }
 
 /**
@@ -246,8 +245,7 @@ int main(int argc, const char *argv[])
                                                                  text_size,
                                                                  &sampling_time);
     double analyzing_time;
-    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(text,
-                                                                   pattern,
+    enum algorithms_t best_by_analyzing = choose_best_by_analyzing(pattern,
                                                                    text_size,
                                                                    &analyzing_time);
 
