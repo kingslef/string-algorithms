@@ -74,13 +74,16 @@ void bm_build_good_suffix(const char *pattern, int *good_suffix,
 
     /* Second case, part of the suffix occurs at the beginning */
     for (uint32_t i = 0; i < pattern_len; i++) {
-        uint32_t j = 0;
 
-        while (j < pattern_len) {
+        uint32_t j;
+        for (j = 0; j < pattern_len; j++) {
+            /* Skip first suffix */
             if (j == 0 && i == 0) {
                 j++;
             }
 
+            /* Search suffix from beginning but only check until to the point
+             * where suffix starts */
             int ret = strncmp(pattern, pattern + i + j, pattern_len - i - j);
             if (ret == 0) {
                 /* Found */
@@ -90,15 +93,16 @@ void bm_build_good_suffix(const char *pattern, int *good_suffix,
                 break;
             }
 
-            j++;
-            if (j == pattern_len) {
-                /* Not found */
-                if (good_suffix[i] == 0) {
-                    good_suffix[i] = pattern_len;
-                }
+        }
+
+        if (j == pattern_len) {
+            /* Not found */
+            if (good_suffix[i] == 0) {
+                good_suffix[i] = pattern_len;
             }
         }
     }
+
 }
 
 /* Pseudocode from Graham A. Stephen: String Searching Algorithms */
