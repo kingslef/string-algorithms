@@ -75,6 +75,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
                                                  const size_t text_len,
                                                  double *time_taken)
 {
+    printf("Sampling..\n");
     struct timespec start_time = get_time();
     const size_t pattern_len = strlen(pattern);
 
@@ -89,6 +90,7 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     const char *sample_pattern;
     char sample_pattern_buf[max_sample_pattern_len + 1];
 
+    /* Only truncate pattern if needed */
     if (max_sample_pattern_len < pattern_len) {
         strncpy(sample_pattern_buf, pattern, max_sample_pattern_len);
         sample_pattern_buf[max_sample_pattern_len] = '\0';
@@ -115,6 +117,8 @@ static enum algorithms_t choose_best_by_sampling(const char *text,
     }
 
     *time_taken = CALC_DIFF_MS(start_time, get_time());
+
+    printf("Sampling done.\n");
 
     return fastest_func;
 }
@@ -207,8 +211,7 @@ int main(int argc, const char *argv[])
 
     /* Find fastest algorithm. Report trivial_mem and rk but don't count them as
      * fastest. */
-    /* TODO: describe that they are not counted in README */
-    printf("\nrunning times:\n");
+    printf("\nRun times:\n");
     enum algorithms_t fastest = end;
     for (enum algorithms_t a = kmp; a != end; a++) {
         printf("%-10s %5.2lf ms\n"
@@ -227,35 +230,38 @@ int main(int argc, const char *argv[])
         }
     }
 
-    /* Find also second fastest algorithm. */
-    enum algorithms_t second_fastest = end;
-    for (enum algorithms_t a = kmp; a != end; a++) {
+    if (fastest == best_by_sampling) {
+        printf("\nSampling chose the best algorithm\n");
+        /* Find also second fastest algorithm. */
+        enum algorithms_t second_fastest = end;
+        for (enum algorithms_t a = kmp; a != end; a++) {
 
-        /* Skip rk and trivial_mem */
-        if (a == rk || a == trivial_mem || a == fastest) {
-            continue;
+            /* Skip rk and trivial_mem */
+            if (a == rk || a == trivial_mem || a == fastest) {
+                continue;
+            }
+
+            if (second_fastest == end
+                || execution_times[a] < execution_times[second_fastest]) {
+                second_fastest = a;
+            }
         }
 
-        if (second_fastest == end
-            || execution_times[a] < execution_times[second_fastest]) {
-            second_fastest = a;
+        if (execution_times[fastest] + sampling_time < execution_times[second_fastest]) {
+            printf(" Still faster than second fastest => Worth it\n");
+        } else {
+            printf(" Slower than the second fastest => Not worth it\n");
         }
-    }
-
-    double diff = execution_times[best_by_sampling]
-        - execution_times[fastest];
-
-    double total = diff + sampling_time;
-    printf("** Difference between fastest algorithm (%s) and algorithm chosen"
-           " by sampling (%s) was:\n"
-           "   %+.2lf ms + %.2lf ms (time took by sampling per algorithm) = %+.2lf ms\n",
-           algorithms[fastest].name, algorithms[best_by_sampling].name,
-           diff, sampling_time, total);
-
-    if (total < execution_times[second_fastest]) {
-        printf(" Still faster than second fastest => Worth it\n");
     } else {
-        printf(" => Not worth it\n");
+        double diff = execution_times[best_by_sampling]
+            - execution_times[fastest];
+
+        double total = diff + sampling_time;
+        printf("** Algorithm chosen"
+               " by sampling (%s) compared to the fastest algorithm (%s) was:\n"
+               "   %+.2lf ms + %.2lf ms (time took by sampling per algorithm) = %+.2lf ms slower\n",
+               algorithms[fastest].name, algorithms[best_by_sampling].name,
+               diff, sampling_time, total);
     }
 
     printf("\nText length was %zu and pattern length was %zu characters\n",
