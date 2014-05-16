@@ -105,9 +105,7 @@ static const char *bm_good_suffix_test(const char *test_string,
 
     memset(good_suffix, 0, sizeof(good_suffix));
 
-    mu_assert_equal("good suffix creation failed",
-                    bm_build_good_suffix(test_string, good_suffix, string_len),
-                    0);
+    bm_build_good_suffix(test_string, good_suffix, string_len);
 
     mu_assert_equal_array("wrong good suffix array created",
                           good_suffix,

@@ -34,43 +34,31 @@ char *strrnstr(const char *haystack, const char *needle, const size_t haystack_l
     return NULL;
 }
 
-int bm_build_good_suffix(const char *pattern, int *good_suffix,
-                         const size_t pattern_len)
+void bm_build_good_suffix(const char *pattern, int *good_suffix,
+                          const size_t pattern_len)
 {
-    if (pattern == NULL) {
-        return -1;
-    }
-
-    DEBUG("%s: building suffix for %s\n", __func__, pattern);
-
+    /* If the mismatch happens at the first character, we can only move by
+     * one */
     good_suffix[pattern_len] = 1;
 
-    /* Two cases: suffix occurs somewhere else in the pattern */
+    /* First case, suffix occurs somewhere else in the pattern */
     for (uint32_t i = pattern_len - 2; ; i--) {
         const char *suffix_to_search = pattern + i + 1;
-
-        DEBUG("%s: -- mismatch at %c (suffix %s)\n", __func__, pattern[i], suffix_to_search);
 
         uint32_t j = 0;
         const char *suffix;
 
+        /* Search suffix from the pattern, backwards */
         do {
-            DEBUG("%s: searching from %s[0, %u)\n",
-                  __func__, pattern, i - j);
-
             suffix = strrnstr(pattern, suffix_to_search, pattern_len - j);
-            if (suffix) {
-                DEBUG("%s: suffix %s found in %s[0, %u) at %u (from %s) -- %s\n",
-                      __func__, suffix_to_search, pattern, i - j, suffix - pattern, suffix,
-                      (suffix[-1] == pattern[i]) ? "but mismatch occurs" : "fine");
-                if (suffix[-1] == pattern[i]) {
-                    suffix = NULL;
-                } else {
-                    break;
-                }
+
+            if (suffix && suffix[-1] == pattern[i]) {
+                suffix = NULL;
             } else {
+                /* Found */
                 break;
             }
+
             j++;
             if (j >= i) {
                 suffix = NULL;
@@ -80,8 +68,6 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix,
 
         if (suffix) {
             good_suffix[i + 1] = (int)(suffix_to_search - suffix);
-            DEBUG("%s: shifting %u by %u\n",
-                  __func__, i + 1, good_suffix[i + 1]);
         } else {
             good_suffix[i + 1] = 0;
         }
@@ -92,21 +78,7 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix,
         }
     }
 
-    DEBUG("%s: --- first part done\n",
-          __func__);
-
-    for (uint32_t i = 0; i < pattern_len + 1; i++) {
-        DEBUG("%u ", i);
-    }
-    DEBUG(":\n");
-
-    for (uint32_t i = 0; i < pattern_len + 1; i++) {
-        DEBUG("%u ", good_suffix[i]);
-    }
-    DEBUG("\n");
-
-
-    /* ... or part of the suffix occurs at the beginning */
+    /* Second case, part of the suffix occurs at the beginning */
     for (uint32_t i = 0; i < pattern_len; i++) {
         uint32_t j = 0;
 
@@ -118,36 +90,22 @@ int bm_build_good_suffix(const char *pattern, int *good_suffix,
 
             ret = strncmp(pattern, pattern + i + j, pattern_len - i - j);
             if (ret == 0) {
-                DEBUG("%s: suffix %s found\n", __func__, pattern + i + j);
                 if (good_suffix[i] == 0) {
                     good_suffix[i] = i + j;
-                    DEBUG("%s: shifting %u by %u\n",
-                          __func__, i, good_suffix[i]);
                 }
                 break;
             } else {
-                DEBUG("%s: suffix %s not found\n", __func__, pattern + i + j);
             }
             j++;
         }
 
         if (ret) {
-            DEBUG("%s: no suffix found\n", __func__);
             if (good_suffix[i] == 0) {
                 good_suffix[i] = pattern_len;
-                DEBUG("%s: shifting %u by %u\n",
-                      __func__, i, good_suffix[i]);
             }
         }
 
     }
-
-    for (uint32_t i = 0; i < pattern_len + 1; i++) {
-        DEBUG("%u ", good_suffix[i]);
-    }
-    DEBUG("\n");
-
-    return 0;
 }
 
 /* Pseudocode from Graham A. Stephen: String Searching Algorithms */
