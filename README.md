@@ -1,6 +1,8 @@
 string-algorithms
 =================
 
+**Moved to https://gitlab.com/aatos/string-algorithms**
+
 This is a project for T-106.5400 String Algorithms course in spring 2014. The
 main idea was to implement some of the well-known exact string pattern matching
 algorithms and study if we could pick the fastest algorithm by sampling the text
